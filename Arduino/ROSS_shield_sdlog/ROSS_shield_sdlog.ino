@@ -94,7 +94,27 @@ void setup() {
     Serial.println("Card init. failed!");
     error(2);
   }
+  
+  
   char filename[15];
+  strcpy(filename, "GPS000.TXT");
+  
+  for (int i = 0; i < 1000; i++) {
+    Serial.println(i);
+    filename[3] = '0' + i/100;
+    filename[4] = '0' + i/10;
+    filename[5] = '0' + i%10;
+    Serial.println(filename);
+    // create if does not exist, do not open existing, write, sync after write
+    if (! SD.exists(filename)) {
+      Serial.println("Break!");
+      break;
+    }
+    
+  }
+  
+  
+  /*char filename[15];
   strcpy(filename, "GPSLOG00.TXT");
   for (uint8_t i = 0; i < 100; i++) {
     filename[6] = '0' + i/10;
@@ -104,7 +124,8 @@ void setup() {
       break;
     }
   }
-
+  */
+  
   logfile = SD.open(filename, FILE_WRITE);
   if( ! logfile ) {
     Serial.print("Couldnt create "); 
