@@ -8,32 +8,16 @@
  * Author : Nick McComb | nickmccomb.net
  */ 
 
-#ifndef F_CPU
-#define F_CPU 32000000
-#endif
 
-#include <avr/io.h>
-#include <util/delay.h>
-#include <stdlib.h>
-#include "Macros.h"
-#include "usart_driver.h"
-#include "avr_compiler.h"
+
+
+#include "main.h"
+#include "usartROSS.h"
 
 //Function Prototypes
 void initIO();
 void configureExternalOscillator();
 void configure32MhzInternalOsc();
-void configureUSART();
-void SendStringPC(char *stufftosend);
-void SendNumPC(uint16_t numToSend);
-
-//Global Data
-
-#define COMP_USART USARTC0
-
-/* Variable used to send and receive USART data. */
-uint8_t sendData;
-uint8_t receivedData;
 
 
 int main(void)
@@ -139,16 +123,3 @@ void configureUSART(void){
 	USART_Tx_Enable(&COMP_USART);
 }
 
-//Sends a string to the computer
-void SendStringPC(char *stufftosend){
-	for(int i = 0 ; stufftosend[i] != '\0' ; i++){
-		while(!USART_IsTXDataRegisterEmpty(&COMP_USART));
-		USART_PutChar(&COMP_USART, stufftosend[i]);
-	}
-}
-
-void SendNumPC(uint16_t numToSend){
-	char buffer[20];
-	itoa(numToSend, buffer, 10);
-	SendStringPC(buffer);
-}

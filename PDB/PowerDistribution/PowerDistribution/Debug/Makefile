@@ -38,6 +38,7 @@ SUBDIRS :=
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../main.cpp \
+../usartROSS.cpp \
 ../usart_driver.c
 
 
@@ -49,18 +50,22 @@ ASM_SRCS +=
 
 OBJS +=  \
 main.o \
+usartROSS.o \
 usart_driver.o
 
 OBJS_AS_ARGS +=  \
 main.o \
+usartROSS.o \
 usart_driver.o
 
 C_DEPS +=  \
 main.d \
+usartROSS.d \
 usart_driver.d
 
 C_DEPS_AS_ARGS +=  \
 main.d \
+usartROSS.d \
 usart_driver.d
 
 OUTPUT_FILE_PATH +=PowerDistribution.elf
@@ -77,6 +82,8 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 

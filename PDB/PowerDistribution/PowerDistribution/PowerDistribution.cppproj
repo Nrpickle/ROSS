@@ -161,10 +161,22 @@
     <Compile Include="avr_compiler.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="main.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Macros.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="projectHeader.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usartROSS.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usartROSS.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usart_driver.c">
