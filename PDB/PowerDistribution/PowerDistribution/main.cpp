@@ -13,17 +13,30 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "Macros.h"
+#include "usart_driver.h"
+#include "avr_compiler.h"
 
 //Function Prototypes
 void initIO();
 void configureExternalOscillator();
 void configure32MhzInternalOsc();
+void configureUSART();
+void SendStringPC(char *stufftosend);
+
+//Global Data
+
+#define COMP_USART USARTC0
+
+/* Variable used to send and receive USART data. */
+uint8_t sendData;
+uint8_t receivedData;
 
 int main(void)
 {
 	initIO();
 	//configureExternalOscillator();
 	configure32MhzInternalOsc();
+	configureUSART();
 	
     while (1) 
     {
@@ -32,10 +45,14 @@ int main(void)
 		STATUS_CLR();
 		ERROR_SET();
 		
+		SendStringPC("Red.\n\r");
+		
 		_delay_ms(500);
 		
 		STATUS_SET();
 		ERROR_CLR();
+		
+		SendStringPC("Green.\n\r");
     }
 }
 
@@ -94,4 +111,31 @@ void configure32MhzInternalOsc()
 	CLK_CTRL = CLK_SCLKSEL_RC32M_gc; //Enable internal  32Mhz crystal
 	
 	
+}
+
+void configureUSART(void){
+	//Set TX (pin7) to be output
+	PORTC.DIRSET = PIN7_bm;
+	//Set RX (pin6) to be input
+	PORTC.DIRCLR = PIN6_bm;
+	
+	//Enable alternate pin location for USART0 in PORTC
+	PORTC.REMAP |= (1 << 4);
+	
+	USART_Format_Set(&COMP_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+	
+	//Enable a 57600 baudrate
+	USART_Baudrate_Set(&COMP_USART, 34, 0);
+	
+	// Enable both RX and TX.
+	USART_Rx_Enable(&COMP_USART);
+	USART_Tx_Enable(&COMP_USART);
+}
+
+//Sends a string to the computer
+void SendStringPC(char *stufftosend){
+	for(int i = 0 ; stufftosend[i] != '\0' ; i++){
+		while(!USART_IsTXDataRegisterEmpty(&COMP_USART));
+		USART_PutChar(&COMP_USART, stufftosend[i]);
+	}
 }
