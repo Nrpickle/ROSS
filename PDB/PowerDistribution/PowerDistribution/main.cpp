@@ -8,10 +8,13 @@
  * Author : Nick McComb | nickmccomb.net
  */ 
 
+#ifndef F_CPU
 #define F_CPU 32000000
+#endif
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <stdlib.h>
 #include "Macros.h"
 #include "usart_driver.h"
 #include "avr_compiler.h"
@@ -22,6 +25,7 @@ void configureExternalOscillator();
 void configure32MhzInternalOsc();
 void configureUSART();
 void SendStringPC(char *stufftosend);
+void SendNumPC(uint16_t numToSend);
 
 //Global Data
 
@@ -31,6 +35,7 @@ void SendStringPC(char *stufftosend);
 uint8_t sendData;
 uint8_t receivedData;
 
+
 int main(void)
 {
 	initIO();
@@ -38,21 +43,23 @@ int main(void)
 	configure32MhzInternalOsc();
 	configureUSART();
 	
+	uint16_t counter = 0;
+	
     while (1) 
     {
-		_delay_ms(500);
+		_delay_ms(1);
 		
 		STATUS_CLR();
 		ERROR_SET();
 		
-		SendStringPC("Red.\n\r");
-		
-		_delay_ms(500);
+		_delay_ms(1);
 		
 		STATUS_SET();
 		ERROR_CLR();
 		
-		SendStringPC("Green.\n\r");
+		SendNumPC(counter++);
+		SendStringPC("\n\r");
+
     }
 }
 
@@ -138,4 +145,10 @@ void SendStringPC(char *stufftosend){
 		while(!USART_IsTXDataRegisterEmpty(&COMP_USART));
 		USART_PutChar(&COMP_USART, stufftosend[i]);
 	}
+}
+
+void SendNumPC(uint16_t numToSend){
+	char buffer[20];
+	itoa(numToSend, buffer, 10);
+	SendStringPC(buffer);
 }
