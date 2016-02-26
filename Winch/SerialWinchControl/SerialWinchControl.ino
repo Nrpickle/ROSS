@@ -39,10 +39,10 @@ void loop() {
   int winchSpeed = parameters[1];
   //char testSend = (char) winchSpeed;
   //Serial.write(testSend);
-  int depthByte1 = parameters[2];
-  //Serial.write(depthByte1);
-  int depthByte2 = parameters[3];
-  //Serial.write(depthByte2);
+  int upperByte = parameters[2];
+  //Serial.write(upperByte);
+  int lowerByte = parameters[3];
+  //Serial.write(lowerByte);
   int duration = parameters[4];
   Serial.write(duration);
   int units = parameters[5];
@@ -51,15 +51,15 @@ void loop() {
   //Serial.write(checksum);
 
   /*
-  if(checksum != ((((winchSpeed ^ depthByte1) ^ depthByte2) ^ duration) ^ units)){
+  if(checksum != ((((winchSpeed ^ upperByte) ^ lowerByte) ^ duration) ^ units)){
     Serial.print("ERROR: Data is corrupted.");
     return;
   }
   else
     Serial.print("Data transmissions successful.");
   */  
-  
-  int depth = depthByte1 + depthByte2;
+  upperByte = upperByte << 8;
+  int depth = upperByte + lowerByte;
   //int depth = 500000; //Test depth
   depth = depth * 1000; //pings/meter ratio (current is place holder)
   int maxSpeed = winchSpeed*90/254;
