@@ -22,16 +22,28 @@ ser.close()
 
 
 header = 255
-speed = int(argv[1]) #Collect runtime parameters
-depth = int(argv[2])
-upperByte = depth >> 8
-lowerByte = depth & 0xFF
-duration = int(argv[3])
-units = int(argv[4])
-checksum = ((((speed ^ upperByte) ^ lowerByte) ^ duration) ^ units) #XOR all variables to create checksum
+speedOut = int(argv[1]) #Collect runtime parameters
+speedIn = int(argv[2])
+depth = int(argv[3])
+upperDepthByte = depth >> 8
+lowerDepthByte = depth & 0xFF
+stop = int(argv[4])
+checksum = (((speedOut ^ speedIn) ^ upperDepthByte) ^ lowerDepthByte) #XOR all variables to create checksum
 footer = 255
 
-parameters = [header , speed, upperByte, lowerByte, duration, units, checksum, footer] #Save parameters in array
+parameters = [header , speedOut, speedIn, upperDepthByte, lowerDepthByte, checksum, footer] #Save parameters in array
+
+if stop != 0:
+	if stop == 1:
+		for x in parameters:
+			x = 0xAA
+	elif stop == 2:
+		for x in parameters:
+			x = 0xBB
+	elif stop == 3:
+		for x in parameters:
+			x = 0xCC
+
 print parameters
 
 ser.open()

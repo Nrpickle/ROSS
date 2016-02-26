@@ -24,20 +24,19 @@ void loop() {
   
   while(!Serial.available()); //Wait for serial input
   
-  int parameters[8];
+  int parameters[7];
   int incomingByte = 0;
   
-  while(Serial.available() < 8) {} //wait for buffer to fill then save values in parameter array
-  for (int i = 0; i < 8; i++){
+  while(Serial.available() < 7) {} //Wait for buffer to fill then save values in parameter array
+  for (int i = 0; i < 7; i++){
     incomingByte = Serial.read();
     parameters[i] = incomingByte;
     digitalWrite(13, HIGH);
   }
   delay(500);
-  digitalWrite(13, LOW);
+  digitalWrite(13, LOW); //Blink LED to indicate completion of data transmission
   
   int winchSpeed = parameters[1];
-  //char testSend = (char) winchSpeed;
   //Serial.write(testSend);
   int upperByte = parameters[2];
   //Serial.write(upperByte);
@@ -64,9 +63,7 @@ void loop() {
   depth = depth * 1000; //pings/meter ratio (current is place holder)
   int maxSpeed = winchSpeed*90/254;
   int maxWinchSpeedOut = 90 + maxSpeed;
-  //int maxWinchSpeedOut = 180; //Test max speed
   int maxWinchSpeedIn = 90 - maxSpeed;
-  //int maxWinchSpeedIn = 0; //test 
   
   if (units == 0){
     duration = duration * 1000;
@@ -74,11 +71,6 @@ void loop() {
   else if (units == 255){
     duration = duration * 60000;
   }
-  /*else{
-    Serial.write("ERROR: Invalid duration units provided.");
-    duration = 0;
-    return;
-  }*/
 
   while(winchEncoder.read() < (depth - 200000))
     ESC.write(maxWinchSpeedOut);
