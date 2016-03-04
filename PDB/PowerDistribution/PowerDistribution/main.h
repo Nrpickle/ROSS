@@ -11,7 +11,7 @@
 
 #include "projectHeader.h"
 
-
+void initADCs();
 
 
 

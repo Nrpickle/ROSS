@@ -1,0 +1,1 @@
+Settings Switch requires pull up resistors internal to uC

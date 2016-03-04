@@ -20,3 +20,22 @@ void SendNumPC(uint16_t numToSend){
 	itoa(numToSend, buffer, 10);
 	SendStringPC(buffer);
 }
+
+void configureUSART(void){
+	//Set TX (pin7) to be output
+	PORTC.DIRSET = PIN7_bm;
+	//Set RX (pin6) to be input
+	PORTC.DIRCLR = PIN6_bm;
+	
+	//Enable alternate pin location for USART0 in PORTC
+	PORTC.REMAP |= (1 << 4);
+	
+	USART_Format_Set(&COMP_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+	
+	//Enable a 57600 baudrate
+	USART_Baudrate_Set(&COMP_USART, 34, 0);
+	
+	// Enable both RX and TX.
+	USART_Rx_Enable(&COMP_USART);
+	USART_Tx_Enable(&COMP_USART);
+}

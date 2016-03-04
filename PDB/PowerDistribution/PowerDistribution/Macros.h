@@ -10,3 +10,7 @@
 
 #define REAR_RELAY_SET(void) (PORTC.OUTSET = PIN5_bm)
 #define REAR_RELAY_CLR(void) (PORTC.OUTCLR = PIN5_bm)
+
+#define CHECK_DIP_SW_1(void) (!(PORTC.IN & PIN2_bm)) //Returns true if bit 1 of the DIP Switch is "ON"
+#define CHECK_DIP_SW_2(void) (!(PORTC.IN & PIN3_bm)) //Returns true if bit 2 of the DIP Switch is "ON"
+

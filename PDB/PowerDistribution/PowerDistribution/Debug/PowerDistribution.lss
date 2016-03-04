@@ -3,29 +3,29 @@ PowerDistribution.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         0000024c  00000000  00000000  00000074  2**1
+  0 .text         0000035c  00000000  00000000  00000074  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000004  00802000  0000024c  000002c0  2**0
+  1 .data         00000004  00802000  0000035c  000003d0  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .comment      00000030  00000000  00000000  000002c4  2**0
+  2 .comment      00000030  00000000  00000000  000003d4  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000002f4  2**2
+  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  00000404  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000068  00000000  00000000  00000334  2**0
+  4 .debug_aranges 00000078  00000000  00000000  00000444  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   00000846  00000000  00000000  0000039c  2**0
+  5 .debug_info   000016ce  00000000  00000000  000004bc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000351  00000000  00000000  00000be2  2**0
+  6 .debug_abbrev 000004a5  00000000  00000000  00001b8a  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   0000035b  00000000  00000000  00000f33  2**0
+  7 .debug_line   0000039e  00000000  00000000  0000202f  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  000000a8  00000000  00000000  00001290  2**2
+  8 .debug_frame  000000d4  00000000  00000000  000023d0  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    000006c1  00000000  00000000  00001338  2**0
+  9 .debug_str    00001666  00000000  00000000  000024a4  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    000000fc  00000000  00000000  000019f9  2**0
+ 10 .debug_loc    00000143  00000000  00000000  00003b0a  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000048  00000000  00000000  00001af5  2**0
+ 11 .debug_ranges 00000058  00000000  00000000  00003c4d  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -87,339 +87,588 @@ Disassembly of section .text:
   b8:	10 e2       	ldi	r17, 0x20	; 32
   ba:	a0 e0       	ldi	r26, 0x00	; 0
   bc:	b0 e2       	ldi	r27, 0x20	; 32
-  be:	ec e4       	ldi	r30, 0x4C	; 76
-  c0:	f2 e0       	ldi	r31, 0x02	; 2
+  be:	ec e5       	ldi	r30, 0x5C	; 92
+  c0:	f3 e0       	ldi	r31, 0x03	; 3
   c2:	02 c0       	rjmp	.+4      	; 0xc8 <__do_copy_data+0x10>
   c4:	05 90       	lpm	r0, Z+
   c6:	0d 92       	st	X+, r0
   c8:	a4 30       	cpi	r26, 0x04	; 4
   ca:	b1 07       	cpc	r27, r17
   cc:	d9 f7       	brne	.-10     	; 0xc4 <__do_copy_data+0xc>
-  ce:	0e 94 a0 00 	call	0x140	; 0x140 <main>
-  d2:	0c 94 24 01 	jmp	0x248	; 0x248 <_exit>
+  ce:	0e 94 06 01 	call	0x20c	; 0x20c <main>
+  d2:	0c 94 ac 01 	jmp	0x358	; 0x358 <_exit>
 
 000000d6 <__bad_interrupt>:
   d6:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
-000000da <_Z6initIOv>:
-	
-}
- 
-void initIO(void){
-	//Set STATUS and ERROR LEDs to be outputs
-	PORTC.DIRSET = PIN1_bm;
-  da:	e0 e4       	ldi	r30, 0x40	; 64
-  dc:	f6 e0       	ldi	r31, 0x06	; 6
-  de:	92 e0       	ldi	r25, 0x02	; 2
-  e0:	91 83       	std	Z+1, r25	; 0x01
-	PORTC.DIRSET = PIN0_bm;
-  e2:	21 e0       	ldi	r18, 0x01	; 1
-  e4:	21 83       	std	Z+1, r18	; 0x01
-	
-	//Set the Relay Pin to be an output
-	PORTC.DIRSET = PIN5_bm;
-  e6:	80 e2       	ldi	r24, 0x20	; 32
-  e8:	81 83       	std	Z+1, r24	; 0x01
-	
-	//Initialize output values
-	STATUS_CLR();
-  ea:	26 83       	std	Z+6, r18	; 0x06
-	ERROR_CLR();
-  ec:	96 83       	std	Z+6, r25	; 0x06
-	
-	REAR_RELAY_CLR();
-  ee:	86 83       	std	Z+6, r24	; 0x06
-  f0:	08 95       	ret
+000000da <_Z8initADCsv>:
+		SendStringPC((char *)"\n\r");
 
-000000f2 <_Z25configure32MhzInternalOscv>:
-		
+    }
 }
 
-void configure32MhzInternalOsc()
-{
-	OSC_CTRL |= OSC_RC32MEN_bm; //Setup 32Mhz crystal
-  f2:	e0 e5       	ldi	r30, 0x50	; 80
-  f4:	f0 e0       	ldi	r31, 0x00	; 0
-  f6:	80 81       	ld	r24, Z
-  f8:	82 60       	ori	r24, 0x02	; 2
-  fa:	80 83       	st	Z, r24
+void initADCs(){
+  da:	cf 93       	push	r28
+  dc:	df 93       	push	r29
 	
-	while(!(OSC_STATUS & OSC_RC32MRDY_bm));
-  fc:	e1 e5       	ldi	r30, 0x51	; 81
-  fe:	f0 e0       	ldi	r31, 0x00	; 0
- 100:	80 81       	ld	r24, Z
- 102:	81 ff       	sbrs	r24, 1
- 104:	fd cf       	rjmp	.-6      	; 0x100 <_Z25configure32MhzInternalOscv+0xe>
+	//Set reference to AVCC/2
+	//
 	
-	CCP = CCP_IOREG_gc; //Trigger protection mechanism
- 106:	88 ed       	ldi	r24, 0xD8	; 216
- 108:	84 bf       	out	0x34, r24	; 52
-	CLK_CTRL = CLK_SCLKSEL_RC32M_gc; //Enable internal  32Mhz crystal
- 10a:	81 e0       	ldi	r24, 0x01	; 1
- 10c:	80 93 40 00 	sts	0x0040, r24
- 110:	08 95       	ret
+	//Set freerun for the ADCs (sample all of the time)
+	ADCA.CTRLA = ADC_ENABLE_bm;
+  de:	a0 e0       	ldi	r26, 0x00	; 0
+  e0:	b2 e0       	ldi	r27, 0x02	; 2
+  e2:	81 e0       	ldi	r24, 0x01	; 1
+  e4:	8c 93       	st	X, r24
+	ADCA.CTRLB |= ADC_RESOLUTION_12BIT_gc;
+  e6:	11 96       	adiw	r26, 0x01	; 1
+  e8:	8c 91       	ld	r24, X
+  ea:	11 97       	sbiw	r26, 0x01	; 1
+  ec:	11 96       	adiw	r26, 0x01	; 1
+  ee:	8c 93       	st	X, r24
+  f0:	11 97       	sbiw	r26, 0x01	; 1
+	ADCA.REFCTRL = ADC_REFSEL_INTVCC_gc;
+  f2:	80 e1       	ldi	r24, 0x10	; 16
+  f4:	12 96       	adiw	r26, 0x02	; 2
+  f6:	8c 93       	st	X, r24
+  f8:	12 97       	sbiw	r26, 0x02	; 2
+	ADCA.EVCTRL = 0; //Disable events
+  fa:	13 96       	adiw	r26, 0x03	; 3
+  fc:	1c 92       	st	X, r1
+  fe:	13 97       	sbiw	r26, 0x03	; 3
+	ADCA.PRESCALER = ADC_PRESCALER_DIV4_gc;
+ 100:	14 96       	adiw	r26, 0x04	; 4
+ 102:	1c 92       	st	X, r1
+ 104:	14 97       	sbiw	r26, 0x04	; 4
+/* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */
+static uint8_t ReadCalibrationByte( uint8_t index ){
+	uint8_t result;
 
-00000112 <_Z14configureUSARTv>:
-	
-}
+	/* Load the NVM Command register to read the calibration row. */
+	NVM_CMD = NVM_CMD_READ_CALIB_ROW_gc;
+ 106:	ca ec       	ldi	r28, 0xCA	; 202
+ 108:	d1 e0       	ldi	r29, 0x01	; 1
+ 10a:	82 e0       	ldi	r24, 0x02	; 2
+ 10c:	88 83       	st	Y, r24
+	result = pgm_read_byte(index);
+ 10e:	e0 e2       	ldi	r30, 0x20	; 32
+ 110:	f0 e0       	ldi	r31, 0x00	; 0
+ 112:	e4 91       	lpm	r30, Z
 
-void configureUSART(void){
-	//Set TX (pin7) to be output
-	PORTC.DIRSET = PIN7_bm;
- 112:	e0 e4       	ldi	r30, 0x40	; 64
- 114:	f6 e0       	ldi	r31, 0x06	; 6
- 116:	80 e8       	ldi	r24, 0x80	; 128
- 118:	81 83       	std	Z+1, r24	; 0x01
-	//Set RX (pin6) to be input
-	PORTC.DIRCLR = PIN6_bm;
- 11a:	80 e4       	ldi	r24, 0x40	; 64
- 11c:	82 83       	std	Z+2, r24	; 0x02
-	
-	//Enable alternate pin location for USART0 in PORTC
-	PORTC.REMAP |= (1 << 4);
- 11e:	86 85       	ldd	r24, Z+14	; 0x0e
- 120:	80 61       	ori	r24, 0x10	; 16
- 122:	86 87       	std	Z+14, r24	; 0x0e
-	
-	USART_Format_Set(&COMP_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
- 124:	e0 ec       	ldi	r30, 0xC0	; 192
- 126:	f8 e0       	ldi	r31, 0x08	; 8
- 128:	83 e0       	ldi	r24, 0x03	; 3
- 12a:	84 83       	std	Z+4, r24	; 0x04
-	
-	//Enable a 57600 baudrate
-	USART_Baudrate_Set(&COMP_USART, 34, 0);
- 12c:	82 e2       	ldi	r24, 0x22	; 34
- 12e:	86 83       	std	Z+6, r24	; 0x06
- 130:	17 82       	std	Z+7, r1	; 0x07
-	
-	// Enable both RX and TX.
-	USART_Rx_Enable(&COMP_USART);
- 132:	83 81       	ldd	r24, Z+3	; 0x03
- 134:	80 61       	ori	r24, 0x10	; 16
- 136:	83 83       	std	Z+3, r24	; 0x03
-	USART_Tx_Enable(&COMP_USART);
- 138:	83 81       	ldd	r24, Z+3	; 0x03
- 13a:	88 60       	ori	r24, 0x08	; 8
- 13c:	83 83       	std	Z+3, r24	; 0x03
- 13e:	08 95       	ret
+	/* Clean up NVM Command register. */
+	NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+ 114:	18 82       	st	Y, r1
+	ADCA.CTRLA = ADC_ENABLE_bm;
+	ADCA.CTRLB |= ADC_RESOLUTION_12BIT_gc;
+	ADCA.REFCTRL = ADC_REFSEL_INTVCC_gc;
+	ADCA.EVCTRL = 0; //Disable events
+	ADCA.PRESCALER = ADC_PRESCALER_DIV4_gc;
+	ADCA.CALL = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0));
+ 116:	1c 96       	adiw	r26, 0x0c	; 12
+ 118:	ec 93       	st	X, r30
+ 11a:	1c 97       	sbiw	r26, 0x0c	; 12
+/* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */
+static uint8_t ReadCalibrationByte( uint8_t index ){
+	uint8_t result;
 
-00000140 <main>:
+	/* Load the NVM Command register to read the calibration row. */
+	NVM_CMD = NVM_CMD_READ_CALIB_ROW_gc;
+ 11c:	88 83       	st	Y, r24
+	result = pgm_read_byte(index);
+ 11e:	e1 e2       	ldi	r30, 0x21	; 33
+ 120:	f0 e0       	ldi	r31, 0x00	; 0
+ 122:	e4 91       	lpm	r30, Z
 
-
-
-int main(void)
-{
-	initIO();
- 140:	0e 94 6d 00 	call	0xda	; 0xda <_Z6initIOv>
-	//configureExternalOscillator();
-	configure32MhzInternalOsc();
- 144:	0e 94 79 00 	call	0xf2	; 0xf2 <_Z25configure32MhzInternalOscv>
-	configureUSART();
- 148:	0e 94 89 00 	call	0x112	; 0x112 <_Z14configureUSARTv>
-	
-	uint16_t counter = 0;
- 14c:	80 e0       	ldi	r24, 0x00	; 0
- 14e:	90 e0       	ldi	r25, 0x00	; 0
-	
-    while (1) 
-    {
-		_delay_ms(1);
-		
-		STATUS_CLR();
- 150:	c0 e4       	ldi	r28, 0x40	; 64
- 152:	d6 e0       	ldi	r29, 0x06	; 6
- 154:	01 e0       	ldi	r16, 0x01	; 1
-		ERROR_SET();
- 156:	12 e0       	ldi	r17, 0x02	; 2
+	/* Clean up NVM Command register. */
+	NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+ 124:	18 82       	st	Y, r1
+	ADCA.CTRLB |= ADC_RESOLUTION_12BIT_gc;
+	ADCA.REFCTRL = ADC_REFSEL_INTVCC_gc;
+	ADCA.EVCTRL = 0; //Disable events
+	ADCA.PRESCALER = ADC_PRESCALER_DIV4_gc;
+	ADCA.CALL = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0));
+	ADCA.CALH = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL1));
+ 126:	1d 96       	adiw	r26, 0x0d	; 13
+ 128:	ec 93       	st	X, r30
+ 12a:	1d 97       	sbiw	r26, 0x0d	; 13
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 158:	ef e3       	ldi	r30, 0x3F	; 63
- 15a:	ff e1       	ldi	r31, 0x1F	; 31
- 15c:	31 97       	sbiw	r30, 0x01	; 1
- 15e:	f1 f7       	brne	.-4      	; 0x15c <main+0x1c>
- 160:	00 c0       	rjmp	.+0      	; 0x162 <main+0x22>
- 162:	00 00       	nop
+ 12c:	8f e7       	ldi	r24, 0x7F	; 127
+ 12e:	9c e0       	ldi	r25, 0x0C	; 12
+ 130:	01 97       	sbiw	r24, 0x01	; 1
+ 132:	f1 f7       	brne	.-4      	; 0x130 <_Z8initADCsv+0x56>
+ 134:	00 c0       	rjmp	.+0      	; 0x136 <_Z8initADCsv+0x5c>
+ 136:	00 00       	nop
+	_delay_us(400);
+	
+	ADCA.CH0.CTRL = (ADC_CH_GAIN_DIV2_gc | ADC_CH_INPUTMODE_SINGLEENDED_gc);
+ 138:	8d e1       	ldi	r24, 0x1D	; 29
+ 13a:	90 96       	adiw	r26, 0x20	; 32
+ 13c:	8c 93       	st	X, r24
+ 13e:	90 97       	sbiw	r26, 0x20	; 32
+	ADCA.CH0.MUXCTRL = ADC_CH_MUXPOS_PIN0_gc;
+ 140:	91 96       	adiw	r26, 0x21	; 33
+ 142:	1c 92       	st	X, r1
+ 144:	91 97       	sbiw	r26, 0x21	; 33
+	ADCA.CH0.INTCTRL = 0; // Set COMPLETE interrupts
+ 146:	92 96       	adiw	r26, 0x22	; 34
+ 148:	1c 92       	st	X, r1
+	//_delay_ms(1);
+	//ADCA.CH0.CTRL = ADC_CH_START_bm;
+	//
+//	ADCA.CTRLA |= ADC_CH8START_bm;
+	
+}
+ 14a:	df 91       	pop	r29
+ 14c:	cf 91       	pop	r28
+ 14e:	08 95       	ret
+
+00000150 <_Z27configureExternalOscillatorv>:
+
+void configureExternalOscillator(){
+	int temp = 0;																			//Temporary variable for helping avoid 4 clock cycle limitation when updating secure registers
+		
+	//Enable external 4MHz oscillator
+	OSC.XOSCCTRL = (OSC_FRQRANGE_2TO9_gc | OSC_XOSCSEL_XTAL_16KCLK_gc);						//Set external oscillator to be between 2 and 9 MHz and select it
+ 150:	e0 e5       	ldi	r30, 0x50	; 80
+ 152:	f0 e0       	ldi	r31, 0x00	; 0
+ 154:	8b e4       	ldi	r24, 0x4B	; 75
+ 156:	82 83       	std	Z+2, r24	; 0x02
+	OSC.CTRL |= OSC_XOSCEN_bm;																//Enable the external oscillator
+ 158:	80 81       	ld	r24, Z
+ 15a:	88 60       	ori	r24, 0x08	; 8
+ 15c:	80 83       	st	Z, r24
+	while(!(OSC.STATUS & OSC_XOSCRDY_bm)){ERROR_SET();};									//While the external oscillator is not ready, set the error led
+ 15e:	81 81       	ldd	r24, Z+1	; 0x01
+ 160:	83 fd       	sbrc	r24, 3
+ 162:	09 c0       	rjmp	.+18     	; 0x176 <_Z27configureExternalOscillatorv+0x26>
+ 164:	a0 e4       	ldi	r26, 0x40	; 64
+ 166:	b6 e0       	ldi	r27, 0x06	; 6
+ 168:	92 e0       	ldi	r25, 0x02	; 2
+ 16a:	15 96       	adiw	r26, 0x05	; 5
+ 16c:	9c 93       	st	X, r25
+ 16e:	15 97       	sbiw	r26, 0x05	; 5
+ 170:	81 81       	ldd	r24, Z+1	; 0x01
+ 172:	83 ff       	sbrs	r24, 3
+ 174:	fa cf       	rjmp	.-12     	; 0x16a <_Z27configureExternalOscillatorv+0x1a>
+	ERROR_CLR();																			//Clear the error led if the external oscillator has stabilized
+ 176:	82 e0       	ldi	r24, 0x02	; 2
+ 178:	80 93 46 06 	sts	0x0646, r24
+		
+	//Enable phase locked loop to multiply external oscillator by 8 to get 32MHz
+	temp = ((OSC_PLLSRC_XOSC_gc & OSC_PLLSRC_gm) | (OSC_PLLFAC_gm & 8));					//Set the external oscillator as the clock source for the pll and set to multiply by 8
+	CCP = CCP_IOREG_gc;																		//Disable register security so we can update the pll control settings
+ 17c:	88 ed       	ldi	r24, 0xD8	; 216
+ 17e:	84 bf       	out	0x34, r24	; 52
+	OSC.PLLCTRL = temp;																		//Write pll control settings to register
+ 180:	e0 e5       	ldi	r30, 0x50	; 80
+ 182:	f0 e0       	ldi	r31, 0x00	; 0
+ 184:	88 ec       	ldi	r24, 0xC8	; 200
+ 186:	85 83       	std	Z+5, r24	; 0x05
+	OSC.CTRL |= OSC_PLLEN_bm;																//Enable the pll
+ 188:	80 81       	ld	r24, Z
+ 18a:	80 61       	ori	r24, 0x10	; 16
+ 18c:	80 83       	st	Z, r24
+	while(!(OSC.STATUS & OSC_PLLRDY_bm)){ERROR_SET();};										//While the pll is not ready, set the error led
+ 18e:	81 81       	ldd	r24, Z+1	; 0x01
+ 190:	84 fd       	sbrc	r24, 4
+ 192:	09 c0       	rjmp	.+18     	; 0x1a6 <_Z27configureExternalOscillatorv+0x56>
+ 194:	a0 e4       	ldi	r26, 0x40	; 64
+ 196:	b6 e0       	ldi	r27, 0x06	; 6
+ 198:	92 e0       	ldi	r25, 0x02	; 2
+ 19a:	15 96       	adiw	r26, 0x05	; 5
+ 19c:	9c 93       	st	X, r25
+ 19e:	15 97       	sbiw	r26, 0x05	; 5
+ 1a0:	81 81       	ldd	r24, Z+1	; 0x01
+ 1a2:	84 ff       	sbrs	r24, 4
+ 1a4:	fa cf       	rjmp	.-12     	; 0x19a <_Z27configureExternalOscillatorv+0x4a>
+	ERROR_CLR();																			//Disable the error led if successfully stabilized
+ 1a6:	82 e0       	ldi	r24, 0x02	; 2
+ 1a8:	80 93 46 06 	sts	0x0646, r24
+		
+	//Set system pll clock divisions and set up as source for all system clocks
+	temp = ((CLK_PSADIV_gm & CLK_PSADIV_1_gc) | (CLK_PSBCDIV_gm & CLK_PSBCDIV_1_1_gc));		//Set system to use pll divided by 1 (no division)
+	CCP = CCP_IOREG_gc;																		//Disable register security so we can update the clock source division setting
+ 1ac:	88 ed       	ldi	r24, 0xD8	; 216
+ 1ae:	84 bf       	out	0x34, r24	; 52
+	CLK.CTRL = temp;																		//Write division settings to register
+ 1b0:	e0 e4       	ldi	r30, 0x40	; 64
+ 1b2:	f0 e0       	ldi	r31, 0x00	; 0
+ 1b4:	10 82       	st	Z, r1
+		
+	temp = CLK_SCLKSEL_PLL_gc;																//Set pll as system clock source
+	CCP = CCP_IOREG_gc;																		//Disable register security so we can update the system clock
+ 1b6:	84 bf       	out	0x34, r24	; 52
+	CLK.CTRL = temp;																		//Write clock source settings to register
+ 1b8:	84 e0       	ldi	r24, 0x04	; 4
+ 1ba:	80 83       	st	Z, r24
+ 1bc:	08 95       	ret
+
+000001be <_Z6initIOv>:
+	
+}
+ 
+void initIO(void){
+	//Set STATUS and ERROR LEDs to be outputs
+	PORTC.DIRSET = PIN1_bm;
+ 1be:	e0 e4       	ldi	r30, 0x40	; 64
+ 1c0:	f6 e0       	ldi	r31, 0x06	; 6
+ 1c2:	22 e0       	ldi	r18, 0x02	; 2
+ 1c4:	21 83       	std	Z+1, r18	; 0x01
+	PORTC.DIRSET = PIN0_bm;
+ 1c6:	81 e0       	ldi	r24, 0x01	; 1
+ 1c8:	81 83       	std	Z+1, r24	; 0x01
+	
+	//Set the Relay Pin to be an output
+	PORTC.DIRSET = PIN5_bm;
+ 1ca:	90 e2       	ldi	r25, 0x20	; 32
+ 1cc:	91 83       	std	Z+1, r25	; 0x01
+	
+	//Set the settings switches to be inputs
+	PORTC.DIRCLR = PIN2_bm;
+ 1ce:	34 e0       	ldi	r19, 0x04	; 4
+ 1d0:	32 83       	std	Z+2, r19	; 0x02
+	PORTC.DIRCLR = PIN3_bm;
+ 1d2:	38 e0       	ldi	r19, 0x08	; 8
+ 1d4:	32 83       	std	Z+2, r19	; 0x02
+	
+	//Set pullups on the switches
+	PORTC.PIN2CTRL = PORT_OPC_PULLUP_gc;
+ 1d6:	38 e1       	ldi	r19, 0x18	; 24
+ 1d8:	32 8b       	std	Z+18, r19	; 0x12
+	PORTC.PIN3CTRL = PORT_OPC_PULLUP_gc;
+ 1da:	33 8b       	std	Z+19, r19	; 0x13
+	
+	//SET ADC Pints to be inputs
+	PORTA.DIRCLR = PIN0_bm;
+ 1dc:	80 93 02 06 	sts	0x0602, r24
+	PORTD.DIRCLR = PIN0_bm;  //Temp-Sensor Pin
+ 1e0:	80 93 62 06 	sts	0x0662, r24
+	
+	//Initialize output values
+	STATUS_CLR();
+ 1e4:	86 83       	std	Z+6, r24	; 0x06
+	ERROR_CLR();
+ 1e6:	26 83       	std	Z+6, r18	; 0x06
+	
+	REAR_RELAY_CLR();
+ 1e8:	96 83       	std	Z+6, r25	; 0x06
+ 1ea:	08 95       	ret
+
+000001ec <_Z20sampleBatteryVoltagev>:
+
+	return( result );
+}
+
+int16_t sampleBatteryVoltage(void){
+	ADCA.CH0.MUXCTRL = ADC_CH_MUXPOS_PIN0_gc; //PIN for batt voltage sense
+ 1ec:	e0 e0       	ldi	r30, 0x00	; 0
+ 1ee:	f2 e0       	ldi	r31, 0x02	; 2
+ 1f0:	11 a2       	std	Z+33, r1	; 0x21
+	ADCA.CH0.CTRL |= ADC_CH_START_bm;
+ 1f2:	80 a1       	ldd	r24, Z+32	; 0x20
+ 1f4:	80 68       	ori	r24, 0x80	; 128
+ 1f6:	80 a3       	std	Z+32, r24	; 0x20
+	
+	while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 0)) != (1U << 0)); // (1U << n) where n is the adc channel, so zero for this one
+ 1f8:	86 81       	ldd	r24, Z+6	; 0x06
+ 1fa:	80 ff       	sbrs	r24, 0
+ 1fc:	fd cf       	rjmp	.-6      	; 0x1f8 <_Z20sampleBatteryVoltagev+0xc>
+	ADCA.INTFLAGS = ((1U << 0) << ADC_CH0IF_bp);
+ 1fe:	e0 e0       	ldi	r30, 0x00	; 0
+ 200:	f2 e0       	ldi	r31, 0x02	; 2
+ 202:	81 e0       	ldi	r24, 0x01	; 1
+ 204:	86 83       	std	Z+6, r24	; 0x06
+	
+	return 	ADCA.CH0.RES;	
+ 206:	84 a1       	ldd	r24, Z+36	; 0x24
+ 208:	95 a1       	ldd	r25, Z+37	; 0x25
+	
+}
+ 20a:	08 95       	ret
+
+0000020c <main>:
+int16_t sampleBatteryVoltage(void);
+
+
+int main(void)
+{
+	initIO();
+ 20c:	0e 94 df 00 	call	0x1be	; 0x1be <_Z6initIOv>
+	configureExternalOscillator();
+ 210:	0e 94 a8 00 	call	0x150	; 0x150 <_Z27configureExternalOscillatorv>
+	//configure32MhzInternalOsc();
+	configureUSART();
+ 214:	0e 94 60 01 	call	0x2c0	; 0x2c0 <_Z14configureUSARTv>
+	initADCs();
+ 218:	0e 94 6d 00 	call	0xda	; 0xda <_Z8initADCsv>
 	
     while (1) 
     {
-		_delay_ms(1);
+		_delay_ms(100);
 		
-		STATUS_CLR();
- 164:	0e 83       	std	Y+6, r16	; 0x06
-		ERROR_SET();
- 166:	1d 83       	std	Y+5, r17	; 0x05
- 168:	ef e3       	ldi	r30, 0x3F	; 63
- 16a:	ff e1       	ldi	r31, 0x1F	; 31
- 16c:	31 97       	sbiw	r30, 0x01	; 1
- 16e:	f1 f7       	brne	.-4      	; 0x16c <main+0x2c>
- 170:	00 c0       	rjmp	.+0      	; 0x172 <main+0x32>
- 172:	00 00       	nop
+		if(CHECK_DIP_SW_1()){
+ 21c:	c0 e4       	ldi	r28, 0x40	; 64
+ 21e:	d6 e0       	ldi	r29, 0x06	; 6
+			STATUS_SET();
+		}
+		else {
+			STATUS_CLR();
+ 220:	01 e0       	ldi	r16, 0x01	; 1
+		}
+		if(CHECK_DIP_SW_2()){
+			ERROR_SET();
+		}
+		else{
+			ERROR_CLR();
+ 222:	12 e0       	ldi	r17, 0x02	; 2
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 224:	2f ef       	ldi	r18, 0xFF	; 255
+ 226:	83 ec       	ldi	r24, 0xC3	; 195
+ 228:	99 e0       	ldi	r25, 0x09	; 9
+ 22a:	21 50       	subi	r18, 0x01	; 1
+ 22c:	80 40       	sbci	r24, 0x00	; 0
+ 22e:	90 40       	sbci	r25, 0x00	; 0
+ 230:	e1 f7       	brne	.-8      	; 0x22a <main+0x1e>
+ 232:	00 c0       	rjmp	.+0      	; 0x234 <main+0x28>
+ 234:	00 00       	nop
+	
+    while (1) 
+    {
+		_delay_ms(100);
 		
-		_delay_ms(1);
+		if(CHECK_DIP_SW_1()){
+ 236:	88 85       	ldd	r24, Y+8	; 0x08
+ 238:	82 fd       	sbrc	r24, 2
+ 23a:	02 c0       	rjmp	.+4      	; 0x240 <main+0x34>
+			STATUS_SET();
+ 23c:	0d 83       	std	Y+5, r16	; 0x05
+ 23e:	01 c0       	rjmp	.+2      	; 0x242 <main+0x36>
+		}
+		else {
+			STATUS_CLR();
+ 240:	0e 83       	std	Y+6, r16	; 0x06
+		}
+		if(CHECK_DIP_SW_2()){
+ 242:	88 85       	ldd	r24, Y+8	; 0x08
+ 244:	83 fd       	sbrc	r24, 3
+ 246:	02 c0       	rjmp	.+4      	; 0x24c <main+0x40>
+			ERROR_SET();
+ 248:	1d 83       	std	Y+5, r17	; 0x05
+ 24a:	01 c0       	rjmp	.+2      	; 0x24e <main+0x42>
+		}
+		else{
+			ERROR_CLR();
+ 24c:	1e 83       	std	Y+6, r17	; 0x06
+ 24e:	2f ef       	ldi	r18, 0xFF	; 255
+ 250:	83 ec       	ldi	r24, 0xC3	; 195
+ 252:	99 e0       	ldi	r25, 0x09	; 9
+ 254:	21 50       	subi	r18, 0x01	; 1
+ 256:	80 40       	sbci	r24, 0x00	; 0
+ 258:	90 40       	sbci	r25, 0x00	; 0
+ 25a:	e1 f7       	brne	.-8      	; 0x254 <main+0x48>
+ 25c:	00 c0       	rjmp	.+0      	; 0x25e <main+0x52>
+ 25e:	00 00       	nop
+		_delay_ms(100);
 		
-		STATUS_SET();
- 174:	0d 83       	std	Y+5, r16	; 0x05
-		ERROR_CLR();
- 176:	1e 83       	std	Y+6, r17	; 0x06
+		//STATUS_SET();
+		//ERROR_CLR();
 		
-		SendNumPC(counter++);
- 178:	7c 01       	movw	r14, r24
- 17a:	ff ef       	ldi	r31, 0xFF	; 255
- 17c:	ef 1a       	sub	r14, r31
- 17e:	ff 0a       	sbc	r15, r31
- 180:	0e 94 d8 00 	call	0x1b0	; 0x1b0 <_Z9SendNumPCj>
-		SendStringPC("\n\r");
- 184:	80 e0       	ldi	r24, 0x00	; 0
- 186:	90 e2       	ldi	r25, 0x20	; 32
- 188:	0e 94 c8 00 	call	0x190	; 0x190 <_Z12SendStringPCPc>
-		_delay_ms(1);
-		
-		STATUS_SET();
-		ERROR_CLR();
-		
-		SendNumPC(counter++);
- 18c:	c7 01       	movw	r24, r14
-		SendStringPC("\n\r");
+		SendNumPC(sampleBatteryVoltage());
+ 260:	0e 94 f6 00 	call	0x1ec	; 0x1ec <_Z20sampleBatteryVoltagev>
+ 264:	0e 94 49 01 	call	0x292	; 0x292 <_Z9SendNumPCj>
+		SendStringPC((char *)"\n\r");
+ 268:	80 e0       	ldi	r24, 0x00	; 0
+ 26a:	90 e2       	ldi	r25, 0x20	; 32
+ 26c:	0e 94 39 01 	call	0x272	; 0x272 <_Z12SendStringPCPc>
 
     }
- 18e:	e4 cf       	rjmp	.-56     	; 0x158 <main+0x18>
+ 270:	d9 cf       	rjmp	.-78     	; 0x224 <main+0x18>
 
-00000190 <_Z12SendStringPCPc>:
+00000272 <_Z12SendStringPCPc>:
 
 #include "usartROSS.h"
 
 //Sends a string to the computer
 void SendStringPC(char *stufftosend){
 	for(int i = 0 ; stufftosend[i] != '\0' ; i++){
- 190:	fc 01       	movw	r30, r24
- 192:	20 81       	ld	r18, Z
- 194:	22 23       	and	r18, r18
- 196:	59 f0       	breq	.+22     	; 0x1ae <_Z12SendStringPCPc+0x1e>
- 198:	dc 01       	movw	r26, r24
- 19a:	11 96       	adiw	r26, 0x01	; 1
+ 272:	fc 01       	movw	r30, r24
+ 274:	20 81       	ld	r18, Z
+ 276:	22 23       	and	r18, r18
+ 278:	59 f0       	breq	.+22     	; 0x290 <_Z12SendStringPCPc+0x1e>
+ 27a:	dc 01       	movw	r26, r24
+ 27c:	11 96       	adiw	r26, 0x01	; 1
 		while(!USART_IsTXDataRegisterEmpty(&COMP_USART));
- 19c:	e0 ec       	ldi	r30, 0xC0	; 192
- 19e:	f8 e0       	ldi	r31, 0x08	; 8
- 1a0:	91 81       	ldd	r25, Z+1	; 0x01
- 1a2:	95 ff       	sbrs	r25, 5
- 1a4:	fd cf       	rjmp	.-6      	; 0x1a0 <_Z12SendStringPCPc+0x10>
+ 27e:	e0 ec       	ldi	r30, 0xC0	; 192
+ 280:	f8 e0       	ldi	r31, 0x08	; 8
+ 282:	91 81       	ldd	r25, Z+1	; 0x01
+ 284:	95 ff       	sbrs	r25, 5
+ 286:	fd cf       	rjmp	.-6      	; 0x282 <_Z12SendStringPCPc+0x10>
 		USART_PutChar(&COMP_USART, stufftosend[i]);
- 1a6:	20 83       	st	Z, r18
+ 288:	20 83       	st	Z, r18
 
 #include "usartROSS.h"
 
 //Sends a string to the computer
 void SendStringPC(char *stufftosend){
 	for(int i = 0 ; stufftosend[i] != '\0' ; i++){
- 1a8:	2d 91       	ld	r18, X+
- 1aa:	21 11       	cpse	r18, r1
- 1ac:	f9 cf       	rjmp	.-14     	; 0x1a0 <_Z12SendStringPCPc+0x10>
- 1ae:	08 95       	ret
+ 28a:	2d 91       	ld	r18, X+
+ 28c:	21 11       	cpse	r18, r1
+ 28e:	f9 cf       	rjmp	.-14     	; 0x282 <_Z12SendStringPCPc+0x10>
+ 290:	08 95       	ret
 
-000001b0 <_Z9SendNumPCj>:
+00000292 <_Z9SendNumPCj>:
 		while(!USART_IsTXDataRegisterEmpty(&COMP_USART));
 		USART_PutChar(&COMP_USART, stufftosend[i]);
 	}
 }
 
 void SendNumPC(uint16_t numToSend){
- 1b0:	cf 93       	push	r28
- 1b2:	df 93       	push	r29
- 1b4:	cd b7       	in	r28, 0x3d	; 61
- 1b6:	de b7       	in	r29, 0x3e	; 62
- 1b8:	64 97       	sbiw	r28, 0x14	; 20
- 1ba:	cd bf       	out	0x3d, r28	; 61
- 1bc:	de bf       	out	0x3e, r29	; 62
+ 292:	cf 93       	push	r28
+ 294:	df 93       	push	r29
+ 296:	cd b7       	in	r28, 0x3d	; 61
+ 298:	de b7       	in	r29, 0x3e	; 62
+ 29a:	64 97       	sbiw	r28, 0x14	; 20
+ 29c:	cd bf       	out	0x3d, r28	; 61
+ 29e:	de bf       	out	0x3e, r29	; 62
     } else if (__radix < 2 || __radix > 36) {
 	*__s = 0;
 	return __s;
     } else {
 	extern char *__itoa_ncheck (int, char *, unsigned char);
 	return __itoa_ncheck (__val, __s, __radix);
- 1be:	4a e0       	ldi	r20, 0x0A	; 10
- 1c0:	be 01       	movw	r22, r28
- 1c2:	6f 5f       	subi	r22, 0xFF	; 255
- 1c4:	7f 4f       	sbci	r23, 0xFF	; 255
- 1c6:	0e 94 ef 00 	call	0x1de	; 0x1de <__itoa_ncheck>
+ 2a0:	4a e0       	ldi	r20, 0x0A	; 10
+ 2a2:	be 01       	movw	r22, r28
+ 2a4:	6f 5f       	subi	r22, 0xFF	; 255
+ 2a6:	7f 4f       	sbci	r23, 0xFF	; 255
+ 2a8:	0e 94 77 01 	call	0x2ee	; 0x2ee <__itoa_ncheck>
 	char buffer[20];
 	itoa(numToSend, buffer, 10);
 	SendStringPC(buffer);
- 1ca:	ce 01       	movw	r24, r28
- 1cc:	01 96       	adiw	r24, 0x01	; 1
- 1ce:	0e 94 c8 00 	call	0x190	; 0x190 <_Z12SendStringPCPc>
- 1d2:	64 96       	adiw	r28, 0x14	; 20
- 1d4:	cd bf       	out	0x3d, r28	; 61
- 1d6:	de bf       	out	0x3e, r29	; 62
- 1d8:	df 91       	pop	r29
- 1da:	cf 91       	pop	r28
- 1dc:	08 95       	ret
+ 2ac:	ce 01       	movw	r24, r28
+ 2ae:	01 96       	adiw	r24, 0x01	; 1
+ 2b0:	0e 94 39 01 	call	0x272	; 0x272 <_Z12SendStringPCPc>
+}
+ 2b4:	64 96       	adiw	r28, 0x14	; 20
+ 2b6:	cd bf       	out	0x3d, r28	; 61
+ 2b8:	de bf       	out	0x3e, r29	; 62
+ 2ba:	df 91       	pop	r29
+ 2bc:	cf 91       	pop	r28
+ 2be:	08 95       	ret
 
-000001de <__itoa_ncheck>:
- 1de:	bb 27       	eor	r27, r27
- 1e0:	4a 30       	cpi	r20, 0x0A	; 10
- 1e2:	31 f4       	brne	.+12     	; 0x1f0 <__itoa_ncheck+0x12>
- 1e4:	99 23       	and	r25, r25
- 1e6:	22 f4       	brpl	.+8      	; 0x1f0 <__itoa_ncheck+0x12>
- 1e8:	bd e2       	ldi	r27, 0x2D	; 45
- 1ea:	90 95       	com	r25
- 1ec:	81 95       	neg	r24
- 1ee:	9f 4f       	sbci	r25, 0xFF	; 255
- 1f0:	0c 94 fb 00 	jmp	0x1f6	; 0x1f6 <__utoa_common>
+000002c0 <_Z14configureUSARTv>:
 
-000001f4 <__utoa_ncheck>:
- 1f4:	bb 27       	eor	r27, r27
+void configureUSART(void){
+	//Set TX (pin7) to be output
+	PORTC.DIRSET = PIN7_bm;
+ 2c0:	e0 e4       	ldi	r30, 0x40	; 64
+ 2c2:	f6 e0       	ldi	r31, 0x06	; 6
+ 2c4:	80 e8       	ldi	r24, 0x80	; 128
+ 2c6:	81 83       	std	Z+1, r24	; 0x01
+	//Set RX (pin6) to be input
+	PORTC.DIRCLR = PIN6_bm;
+ 2c8:	80 e4       	ldi	r24, 0x40	; 64
+ 2ca:	82 83       	std	Z+2, r24	; 0x02
+	
+	//Enable alternate pin location for USART0 in PORTC
+	PORTC.REMAP |= (1 << 4);
+ 2cc:	86 85       	ldd	r24, Z+14	; 0x0e
+ 2ce:	80 61       	ori	r24, 0x10	; 16
+ 2d0:	86 87       	std	Z+14, r24	; 0x0e
+	
+	USART_Format_Set(&COMP_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+ 2d2:	e0 ec       	ldi	r30, 0xC0	; 192
+ 2d4:	f8 e0       	ldi	r31, 0x08	; 8
+ 2d6:	83 e0       	ldi	r24, 0x03	; 3
+ 2d8:	84 83       	std	Z+4, r24	; 0x04
+	
+	//Enable a 57600 baudrate
+	USART_Baudrate_Set(&COMP_USART, 34, 0);
+ 2da:	82 e2       	ldi	r24, 0x22	; 34
+ 2dc:	86 83       	std	Z+6, r24	; 0x06
+ 2de:	17 82       	std	Z+7, r1	; 0x07
+	
+	// Enable both RX and TX.
+	USART_Rx_Enable(&COMP_USART);
+ 2e0:	83 81       	ldd	r24, Z+3	; 0x03
+ 2e2:	80 61       	ori	r24, 0x10	; 16
+ 2e4:	83 83       	std	Z+3, r24	; 0x03
+	USART_Tx_Enable(&COMP_USART);
+ 2e6:	83 81       	ldd	r24, Z+3	; 0x03
+ 2e8:	88 60       	ori	r24, 0x08	; 8
+ 2ea:	83 83       	std	Z+3, r24	; 0x03
+ 2ec:	08 95       	ret
 
-000001f6 <__utoa_common>:
- 1f6:	fb 01       	movw	r30, r22
- 1f8:	55 27       	eor	r21, r21
- 1fa:	aa 27       	eor	r26, r26
- 1fc:	88 0f       	add	r24, r24
- 1fe:	99 1f       	adc	r25, r25
- 200:	aa 1f       	adc	r26, r26
- 202:	a4 17       	cp	r26, r20
- 204:	10 f0       	brcs	.+4      	; 0x20a <__utoa_common+0x14>
- 206:	a4 1b       	sub	r26, r20
- 208:	83 95       	inc	r24
- 20a:	50 51       	subi	r21, 0x10	; 16
- 20c:	b9 f7       	brne	.-18     	; 0x1fc <__utoa_common+0x6>
- 20e:	a0 5d       	subi	r26, 0xD0	; 208
- 210:	aa 33       	cpi	r26, 0x3A	; 58
- 212:	08 f0       	brcs	.+2      	; 0x216 <__utoa_common+0x20>
- 214:	a9 5d       	subi	r26, 0xD9	; 217
- 216:	a1 93       	st	Z+, r26
- 218:	00 97       	sbiw	r24, 0x00	; 0
- 21a:	79 f7       	brne	.-34     	; 0x1fa <__utoa_common+0x4>
- 21c:	b1 11       	cpse	r27, r1
- 21e:	b1 93       	st	Z+, r27
- 220:	11 92       	st	Z+, r1
- 222:	cb 01       	movw	r24, r22
- 224:	0c 94 14 01 	jmp	0x228	; 0x228 <strrev>
+000002ee <__itoa_ncheck>:
+ 2ee:	bb 27       	eor	r27, r27
+ 2f0:	4a 30       	cpi	r20, 0x0A	; 10
+ 2f2:	31 f4       	brne	.+12     	; 0x300 <__itoa_ncheck+0x12>
+ 2f4:	99 23       	and	r25, r25
+ 2f6:	22 f4       	brpl	.+8      	; 0x300 <__itoa_ncheck+0x12>
+ 2f8:	bd e2       	ldi	r27, 0x2D	; 45
+ 2fa:	90 95       	com	r25
+ 2fc:	81 95       	neg	r24
+ 2fe:	9f 4f       	sbci	r25, 0xFF	; 255
+ 300:	0c 94 83 01 	jmp	0x306	; 0x306 <__utoa_common>
 
-00000228 <strrev>:
- 228:	dc 01       	movw	r26, r24
- 22a:	fc 01       	movw	r30, r24
- 22c:	67 2f       	mov	r22, r23
- 22e:	71 91       	ld	r23, Z+
- 230:	77 23       	and	r23, r23
- 232:	e1 f7       	brne	.-8      	; 0x22c <strrev+0x4>
- 234:	32 97       	sbiw	r30, 0x02	; 2
- 236:	04 c0       	rjmp	.+8      	; 0x240 <strrev+0x18>
- 238:	7c 91       	ld	r23, X
- 23a:	6d 93       	st	X+, r22
- 23c:	70 83       	st	Z, r23
- 23e:	62 91       	ld	r22, -Z
- 240:	ae 17       	cp	r26, r30
- 242:	bf 07       	cpc	r27, r31
- 244:	c8 f3       	brcs	.-14     	; 0x238 <strrev+0x10>
- 246:	08 95       	ret
+00000304 <__utoa_ncheck>:
+ 304:	bb 27       	eor	r27, r27
 
-00000248 <_exit>:
- 248:	f8 94       	cli
+00000306 <__utoa_common>:
+ 306:	fb 01       	movw	r30, r22
+ 308:	55 27       	eor	r21, r21
+ 30a:	aa 27       	eor	r26, r26
+ 30c:	88 0f       	add	r24, r24
+ 30e:	99 1f       	adc	r25, r25
+ 310:	aa 1f       	adc	r26, r26
+ 312:	a4 17       	cp	r26, r20
+ 314:	10 f0       	brcs	.+4      	; 0x31a <__utoa_common+0x14>
+ 316:	a4 1b       	sub	r26, r20
+ 318:	83 95       	inc	r24
+ 31a:	50 51       	subi	r21, 0x10	; 16
+ 31c:	b9 f7       	brne	.-18     	; 0x30c <__utoa_common+0x6>
+ 31e:	a0 5d       	subi	r26, 0xD0	; 208
+ 320:	aa 33       	cpi	r26, 0x3A	; 58
+ 322:	08 f0       	brcs	.+2      	; 0x326 <__utoa_common+0x20>
+ 324:	a9 5d       	subi	r26, 0xD9	; 217
+ 326:	a1 93       	st	Z+, r26
+ 328:	00 97       	sbiw	r24, 0x00	; 0
+ 32a:	79 f7       	brne	.-34     	; 0x30a <__utoa_common+0x4>
+ 32c:	b1 11       	cpse	r27, r1
+ 32e:	b1 93       	st	Z+, r27
+ 330:	11 92       	st	Z+, r1
+ 332:	cb 01       	movw	r24, r22
+ 334:	0c 94 9c 01 	jmp	0x338	; 0x338 <strrev>
 
-0000024a <__stop_program>:
- 24a:	ff cf       	rjmp	.-2      	; 0x24a <__stop_program>
+00000338 <strrev>:
+ 338:	dc 01       	movw	r26, r24
+ 33a:	fc 01       	movw	r30, r24
+ 33c:	67 2f       	mov	r22, r23
+ 33e:	71 91       	ld	r23, Z+
+ 340:	77 23       	and	r23, r23
+ 342:	e1 f7       	brne	.-8      	; 0x33c <strrev+0x4>
+ 344:	32 97       	sbiw	r30, 0x02	; 2
+ 346:	04 c0       	rjmp	.+8      	; 0x350 <strrev+0x18>
+ 348:	7c 91       	ld	r23, X
+ 34a:	6d 93       	st	X+, r22
+ 34c:	70 83       	st	Z, r23
+ 34e:	62 91       	ld	r22, -Z
+ 350:	ae 17       	cp	r26, r30
+ 352:	bf 07       	cpc	r27, r31
+ 354:	c8 f3       	brcs	.-14     	; 0x348 <strrev+0x10>
+ 356:	08 95       	ret
+
+00000358 <_exit>:
+ 358:	f8 94       	cli
+
+0000035a <__stop_program>:
+ 35a:	ff cf       	rjmp	.-2      	; 0x35a <__stop_program>
