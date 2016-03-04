@@ -27,7 +27,7 @@ int main(void)
 	initIO();
 	configureExternalOscillator();
 	//configure32MhzInternalOsc();
-	configureUSART();
+	configureUSART();	//Set up for 57600 Baud
 	initADCs();
 	
 	uint16_t counter = 0;
@@ -55,9 +55,11 @@ int main(void)
 		
 		//STATUS_SET();
 		//ERROR_CLR();
-		
+		SendStringPC((char *)"Temp ADC Val: ");
 		SendNumPC(temperature = sampleTempSensorVoltage());
-		SendStringPC((char *)"\n\r");
+		SendStringPC((char *)"\tBattery ADC Val: ");
+		SendNumPC(sampleBatteryVoltage());
+		SendStringPC((char *)"\n\r\n\r");
 
     }
 }
@@ -70,23 +72,21 @@ void initADCs(){
 	
 	//Set reference to AVCC/2
 	//
-	
-	//Set freerun for the ADCs (sample all of the time)
-	ADCA.CTRLA = ADC_ENABLE_bm;
-	ADCA.CTRLB |= ADC_RESOLUTION_12BIT_gc;
+		
+	ADCA.CTRLB = (ADC_RESOLUTION_MT12BIT_gc | ADC_CONMODE_bm);	//Sets resolution to 12 bit and sets conversion mode to signed
 	ADCA.REFCTRL = ADC_REFSEL_AREFA_gc;                              //Reference the "rail splitter" 2.5v reference
 	ADCA.EVCTRL = 0; //Disable events
 	ADCA.PRESCALER = ADC_PRESCALER_DIV512_gc;
 	ADCA.CALL = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0));
 	ADCA.CALH = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL1));
 	_delay_us(400);
-	
+	//ADCA.CH0.AVGCTRL = ADC_SAMPNUM_256X_gc;
 	ADCA.CH0.CTRL = (ADC_CH_GAIN_1X_gc | ADC_CH_INPUTMODE_DIFFWGAINL_gc);
-	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEG0_bm);  //Init the ADC MUX to use the PIN8 input
+	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEGL_PIN1_gc);  //Init the ADC MUX to use the PIN8 input
 																	 //and set the negative input to the GND
 																     //reference on PORTA PIN1
 	ADCA.CH0.INTCTRL = 0; // Set COMPLETE interrupts
-	
+	ADCA.CTRLA = ADC_ENABLE_bm;
 	//ADCA.REFCTRL 
 	
 	//Temperature sensor is on PA0 (ADC0)
@@ -193,22 +193,27 @@ static uint8_t ReadCalibrationByte( uint8_t index ){
 }
 
 int16_t sampleTempSensorVoltage(void){
-	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEG0_bm);//ADC_CH_MUXNEG0_bm);
+	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEGL_PIN1_gc);//ADC_CH_MUXNEG0_bm);
 	ADCA.CH0.CTRL |= ADC_CH_START_bm;
 	
 	_delay_us(400);
 	
-	while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 0)) != (1U << 0)); // (1U << n) where n is the adc channel, so zero for this one
+	//while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 8)) != (1U << 8)); // (1U << n) where n is the adc channel, so zero for this one
+	
+	while(!(ADCA.INTFLAGS & (1 << 0)));
+	ADCA.INTFLAGS = (1 << 0);
 	
 	return 	ADCA.CH0.RES;
 }
 
 int16_t sampleBatteryVoltage(void){
-	ADCA.CH0.MUXCTRL = ADC_CH_MUXPOS_PIN0_gc; //PIN for batt voltage sense
+	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN9_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for batt voltage sense
 	ADCA.CH0.CTRL |= ADC_CH_START_bm;
 	
-	while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 0)) != (1U << 0)); // (1U << n) where n is the adc channel, so zero for this one
-	ADCA.INTFLAGS = ((1U << 0) << ADC_CH0IF_bp);
+	//while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 0)) != (1U << 0)); // (1U << n) where n is the adc channel, so zero for this one
+	//ADCA.INTFLAGS = ((1U << 0) << ADC_CH0IF_bp);
+	while(!(ADCA.INTFLAGS & (1 << 0)));
+	ADCA.INTFLAGS = (1 << 0);
 	
 	return 	ADCA.CH0.RES;	
 	

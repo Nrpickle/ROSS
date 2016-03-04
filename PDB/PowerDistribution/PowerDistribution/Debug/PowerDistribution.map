@@ -1,7 +1,7 @@
 Archive member included to satisfy reference by file (symbol)
 
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_exit.o)
-                              C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o (exit)
+                              C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o (exit)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_copy_data.o)
                               main.o (__do_copy_data)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(itoa_ncheck.o)
@@ -13,14 +13,12 @@ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/..
 
 Discarded input sections
 
- .data          0x00000000        0x0 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
- .bss           0x00000000        0x0 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .data          0x00000000        0x0 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .bss           0x00000000        0x0 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
  .text          0x00000000        0x0 main.o
  .data          0x00000000        0x0 main.o
  .bss           0x00000000        0x0 main.o
  .text._Z25configure32MhzInternalOscv
-                0x00000000       0x20 main.o
- .text._Z20sampleBatteryVoltagev
                 0x00000000       0x20 main.o
  .text          0x00000000        0x0 usartROSS.o
  .data          0x00000000        0x0 usartROSS.o
@@ -55,7 +53,7 @@ Discarded input sections
                 0x00000000       0x68 usart_driver.o
  .debug_ranges  0x00000000       0x58 usart_driver.o
  .debug_line    0x00000000      0x1d9 usart_driver.o
- .debug_str     0x00000000      0x46f usart_driver.o
+ .debug_str     0x00000000      0x46c usart_driver.o
  .comment       0x00000000       0x31 usart_driver.o
  .debug_frame   0x00000000       0xc4 usart_driver.o
  .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_exit.o)
@@ -114,7 +112,7 @@ user_signatures  0x00850000         0x00000400         rw !x
 
 Linker script and memory map
 
-LOAD C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+LOAD C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
 LOAD main.o
 LOAD usartROSS.o
 LOAD usart_driver.o
@@ -127,7 +125,7 @@ START GROUP
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libm.a
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a
-LOAD C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2\libatxmega32e5.a
+LOAD C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2\libatxmega32e5.a
 END GROUP
 
 .hash
@@ -220,9 +218,9 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x37e
+.text           0x00000000      0x3ba
  *(.vectors)
- .vectors       0x00000000       0xac C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .vectors       0x00000000       0xac C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
                 0x00000000                __vector_default
                 0x00000000                __vectors
  *(.vectors)
@@ -248,13 +246,13 @@ END GROUP
  SORT(*)(.ctors)
  SORT(*)(.dtors)
  *(.init0)
- .init0         0x000000ac        0x0 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .init0         0x000000ac        0x0 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
                 0x000000ac                __init
  *(.init0)
  *(.init1)
  *(.init1)
  *(.init2)
- .init2         0x000000ac        0xc C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .init2         0x000000ac        0xc C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
  *(.init2)
  *(.init3)
  *(.init3)
@@ -271,10 +269,10 @@ END GROUP
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x000000ce        0x8 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .init9         0x000000ce        0x8 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
  *(.init9)
  *(.text)
- .text          0x000000d6        0x4 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+ .text          0x000000d6        0x4 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
                 0x000000d6                __vector_38
                 0x000000d6                __vector_22
                 0x000000d6                __vector_28
@@ -321,43 +319,46 @@ END GROUP
                 0x000000da                . = ALIGN (0x2)
  *(.text.*)
  .text._Z8initADCsv
-                0x000000da       0x78 main.o
+                0x000000da       0x76 main.o
                 0x000000da                _Z8initADCsv
  .text._Z27configureExternalOscillatorv
-                0x00000152       0x6e main.o
-                0x00000152                _Z27configureExternalOscillatorv
+                0x00000150       0x6e main.o
+                0x00000150                _Z27configureExternalOscillatorv
  .text._Z6initIOv
-                0x000001c0       0x38 main.o
-                0x000001c0                _Z6initIOv
+                0x000001be       0x38 main.o
+                0x000001be                _Z6initIOv
  .text._Z23sampleTempSensorVoltagev
-                0x000001f8       0x2a main.o
-                0x000001f8                _Z23sampleTempSensorVoltagev
- .text.main     0x00000222       0x72 main.o
-                0x00000222                main
+                0x000001f6       0x2e main.o
+                0x000001f6                _Z23sampleTempSensorVoltagev
+ .text._Z20sampleBatteryVoltagev
+                0x00000224       0x22 main.o
+                0x00000224                _Z20sampleBatteryVoltagev
+ .text.main     0x00000246       0x8a main.o
+                0x00000246                main
  .text._Z12SendStringPCPc
-                0x00000294       0x20 usartROSS.o
-                0x00000294                _Z12SendStringPCPc
+                0x000002d0       0x20 usartROSS.o
+                0x000002d0                _Z12SendStringPCPc
  .text._Z9SendNumPCj
-                0x000002b4       0x2e usartROSS.o
-                0x000002b4                _Z9SendNumPCj
+                0x000002f0       0x2e usartROSS.o
+                0x000002f0                _Z9SendNumPCj
  .text._Z14configureUSARTv
-                0x000002e2       0x2e usartROSS.o
-                0x000002e2                _Z14configureUSARTv
+                0x0000031e       0x2e usartROSS.o
+                0x0000031e                _Z14configureUSARTv
  .text.avr-libc
-                0x00000310       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(itoa_ncheck.o)
-                0x00000310                __itoa_ncheck
+                0x0000034c       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(itoa_ncheck.o)
+                0x0000034c                __itoa_ncheck
  .text.avr-libc
-                0x00000326       0x34 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(utoa_ncheck.o)
-                0x00000326                __utoa_ncheck
-                0x00000328                __utoa_common
+                0x00000362       0x34 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(utoa_ncheck.o)
+                0x00000362                __utoa_ncheck
+                0x00000364                __utoa_common
  .text.avr-libc
-                0x0000035a       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(strrev.o)
-                0x0000035a                strrev
-                0x0000037a                . = ALIGN (0x2)
+                0x00000396       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avrxmega2\libc.a(strrev.o)
+                0x00000396                strrev
+                0x000003b6                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000037a        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_exit.o)
-                0x0000037a                _exit
-                0x0000037a                exit
+ .fini9         0x000003b6        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_exit.o)
+                0x000003b6                _exit
+                0x000003b6                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -376,39 +377,39 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000037a        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_exit.o)
+ .fini0         0x000003b6        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avrxmega2\libgcc.a(_exit.o)
  *(.fini0)
-                0x0000037e                _etext = .
+                0x000003ba                _etext = .
 
-.data           0x00802000        0x4 load address 0x0000037e
+.data           0x00802000       0x28 load address 0x000003ba
                 0x00802000                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
  *(.rodata)
  *(.rodata*)
  .rodata.str1.1
-                0x00802000        0x3 main.o
+                0x00802000       0x27 main.o
  *(.gnu.linkonce.d*)
-                0x00802004                . = ALIGN (0x2)
- *fill*         0x00802003        0x1 
-                0x00802004                _edata = .
-                0x00802004                PROVIDE (__data_end, .)
+                0x00802028                . = ALIGN (0x2)
+ *fill*         0x00802027        0x1 
+                0x00802028                _edata = .
+                0x00802028                PROVIDE (__data_end, .)
 
-.bss            0x00802004        0x0
-                0x00802004                PROVIDE (__bss_start, .)
+.bss            0x00802028        0x0
+                0x00802028                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  *(COMMON)
-                0x00802004                PROVIDE (__bss_end, .)
-                0x0000037e                __data_load_start = LOADADDR (.data)
-                0x00000382                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00802028                PROVIDE (__bss_end, .)
+                0x000003ba                __data_load_start = LOADADDR (.data)
+                0x000003e2                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00802004        0x0
-                0x00802004                PROVIDE (__noinit_start, .)
+.noinit         0x00802028        0x0
+                0x00802028                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00802004                PROVIDE (__noinit_end, .)
-                0x00802004                _end = .
-                0x00802004                PROVIDE (__heap_start, .)
+                0x00802028                PROVIDE (__noinit_end, .)
+                0x00802028                _end = .
+                0x00802028                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -456,7 +457,7 @@ END GROUP
 .note.gnu.avr.deviceinfo
                 0x00000000       0x40
  .note.gnu.avr.deviceinfo
-                0x00000000       0x40 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.28/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
+                0x00000000       0x40 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/XMEGAE_DFP/1.0.30/gcc/dev/atxmega32e5/avrxmega2/crtatxmega32e5.o
 
 .note.gnu.build-id
  *(.note.gnu.build-id)
@@ -483,32 +484,32 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x1748
+.debug_info     0x00000000     0x17c0
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000     0x12a6 main.o
- .debug_info    0x000012a6      0x4a2 usartROSS.o
+ .debug_info    0x00000000     0x131e main.o
+ .debug_info    0x0000131e      0x4a2 usartROSS.o
 
-.debug_abbrev   0x00000000      0x4c6
+.debug_abbrev   0x00000000      0x4d8
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x2e8 main.o
- .debug_abbrev  0x000002e8      0x1de usartROSS.o
+ .debug_abbrev  0x00000000      0x2fa main.o
+ .debug_abbrev  0x000002fa      0x1de usartROSS.o
 
-.debug_line     0x00000000      0x3c3
+.debug_line     0x00000000      0x3c7
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x272 main.o
- .debug_line    0x00000272      0x151 usartROSS.o
+ .debug_line    0x00000000      0x276 main.o
+ .debug_line    0x00000276      0x151 usartROSS.o
 
 .debug_frame    0x00000000       0xe4
  *(.debug_frame)
  .debug_frame   0x00000000       0x90 main.o
  .debug_frame   0x00000090       0x54 usartROSS.o
 
-.debug_str      0x00000000     0x16a7
+.debug_str      0x00000000     0x1743
  *(.debug_str)
- .debug_str     0x00000000     0x154f main.o
-                               0x15b7 (size before relaxing)
- .debug_str     0x0000154f      0x158 usartROSS.o
-                                0x463 (size before relaxing)
+ .debug_str     0x00000000     0x15eb main.o
+                               0x1653 (size before relaxing)
+ .debug_str     0x000015eb      0x158 usartROSS.o
+                                0x460 (size before relaxing)
 
 .debug_loc      0x00000000      0x186
  *(.debug_loc)
