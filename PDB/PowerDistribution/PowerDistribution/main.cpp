@@ -18,6 +18,7 @@ void initIO();
 void configureExternalOscillator();
 void configure32MhzInternalOsc();
 static uint8_t ReadCalibrationByte( uint8_t index );
+int16_t sampleTempSensorVoltage(void);
 int16_t sampleBatteryVoltage(void);
 
 
@@ -30,6 +31,7 @@ int main(void)
 	initADCs();
 	
 	uint16_t counter = 0;
+	uint16_t temperature = 0;
 	
     while (1) 
     {
@@ -41,7 +43,7 @@ int main(void)
 		else {
 			STATUS_CLR();
 		}
-		if(CHECK_DIP_SW_2()){
+		if(temperature > 3700){
 			ERROR_SET();
 		}
 		else{
@@ -49,12 +51,12 @@ int main(void)
 		}
 		//ERROR_SET();
 		
-		_delay_ms(100);
+		_delay_ms(1000);
 		
 		//STATUS_SET();
 		//ERROR_CLR();
 		
-		SendNumPC(sampleBatteryVoltage());
+		SendNumPC(temperature = sampleTempSensorVoltage());
 		SendStringPC((char *)"\n\r");
 
     }
@@ -72,15 +74,17 @@ void initADCs(){
 	//Set freerun for the ADCs (sample all of the time)
 	ADCA.CTRLA = ADC_ENABLE_bm;
 	ADCA.CTRLB |= ADC_RESOLUTION_12BIT_gc;
-	ADCA.REFCTRL = ADC_REFSEL_INTVCC_gc;
+	ADCA.REFCTRL = ADC_REFSEL_AREFA_gc;                              //Reference the "rail splitter" 2.5v reference
 	ADCA.EVCTRL = 0; //Disable events
-	ADCA.PRESCALER = ADC_PRESCALER_DIV4_gc;
+	ADCA.PRESCALER = ADC_PRESCALER_DIV512_gc;
 	ADCA.CALL = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0));
 	ADCA.CALH = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL1));
 	_delay_us(400);
 	
-	ADCA.CH0.CTRL = (ADC_CH_GAIN_DIV2_gc | ADC_CH_INPUTMODE_SINGLEENDED_gc);
-	ADCA.CH0.MUXCTRL = ADC_CH_MUXPOS_PIN0_gc;
+	ADCA.CH0.CTRL = (ADC_CH_GAIN_1X_gc | ADC_CH_INPUTMODE_DIFFWGAINL_gc);
+	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEG0_bm);  //Init the ADC MUX to use the PIN8 input
+																	 //and set the negative input to the GND
+																     //reference on PORTA PIN1
 	ADCA.CH0.INTCTRL = 0; // Set COMPLETE interrupts
 	
 	//ADCA.REFCTRL 
@@ -149,8 +153,10 @@ void initIO(void){
 	PORTC.PIN3CTRL = PORT_OPC_PULLUP_gc;
 	
 	//SET ADC Pints to be inputs
-	PORTA.DIRCLR = PIN0_bm;
+	PORTA.DIRCLR = PIN0_bm;  //2.5v ref (AFREF Pin)
+	PORTA.DIRCLR = PIN1_bm;  //Ground reference
 	PORTD.DIRCLR = PIN0_bm;  //Temp-Sensor Pin
+	
 	
 	//Initialize output values
 	STATUS_CLR();
@@ -184,6 +190,17 @@ static uint8_t ReadCalibrationByte( uint8_t index ){
 	NVM_CMD = NVM_CMD_NO_OPERATION_gc;
 
 	return( result );
+}
+
+int16_t sampleTempSensorVoltage(void){
+	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEG0_bm);//ADC_CH_MUXNEG0_bm);
+	ADCA.CH0.CTRL |= ADC_CH_START_bm;
+	
+	_delay_us(400);
+	
+	while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 0)) != (1U << 0)); // (1U << n) where n is the adc channel, so zero for this one
+	
+	return 	ADCA.CH0.RES;
 }
 
 int16_t sampleBatteryVoltage(void){
