@@ -36,19 +36,12 @@ void loop() {
   delay(500);
   digitalWrite(13, LOW); //Blink LED to indicate completion of data transmission
   
-  int winchSpeed = parameters[1];
-  //Serial.write(testSend);
-  int upperByte = parameters[2];
-  //Serial.write(upperByte);
-  int lowerByte = parameters[3];
-  //Serial.write(lowerByte);
-  int duration = parameters[4];
-  Serial.write(duration);
-  int units = parameters[5];
-  //Serial.write(units);
-  int checksum = parameters[6];
-  //Serial.write(checksum);
-
+  int winchSpeedOut = parameters[1]; //save array contents to corisponding variables
+  int winchSpeedIn = parameters[2];
+  int upperByte = parameters[3];
+  int lowerByte = parameters[4];
+  int checksum = parameters[5];
+ 
   /*
   if(checksum != ((((winchSpeed ^ upperByte) ^ lowerByte) ^ duration) ^ units)){
     Serial.print("ERROR: Data is corrupted.");
@@ -59,18 +52,13 @@ void loop() {
   */  
   upperByte = upperByte << 8;
   int depth = upperByte + lowerByte;
-  //int depth = 500000; //Test depth
+  
   depth = depth * 1000; //pings/meter ratio (current is place holder)
-  int maxSpeed = winchSpeed*90/254;
+  
+  int maxSpeedOut = winchSpeedOut*90/254;
+  int maxSpeedIn = winchSpeedIn*90/254;
   int maxWinchSpeedOut = 90 + maxSpeed;
   int maxWinchSpeedIn = 90 - maxSpeed;
-  
-  if (units == 0){
-    duration = duration * 1000;
-  }
-  else if (units == 255){
-    duration = duration * 60000;
-  }
 
   while(winchEncoder.read() < (depth - 200000))
     ESC.write(maxWinchSpeedOut);

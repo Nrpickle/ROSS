@@ -40,9 +40,15 @@ if stop != 0:
 	elif stop == 2:
 		for x in parameters:
 			x = 0xBB
-	elif stop == 3:
+	elif stop == 4:
 		for x in parameters:
-			x = 0xCC
+			x = 0xCC	
+	elif stop == 8:
+		for x in parameters:
+			x = 0xDD
+	elif stop == 16:
+		for x in parameters:
+			x = 0xEE
 
 print parameters
 
