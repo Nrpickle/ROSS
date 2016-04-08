@@ -3,19 +3,22 @@
 #include <Servo.h>
 #include <Encoder.h>
 
-#define remStartPin 5
-#define remStopPin 6
-
+//Define state machine states
 #define receiveData 0
 #define takeProfile 1
 #define fastIn 2
 #define slowIn 3
 #define halt 4
+
+//Define remote start/stop pins
 #define remoteStart 5
 #define remoteStop 6
+#define remoteStartLED 7
+#define remoteStopLED 8
+#define startTime 750 //How long to hold remote start HIGH
 
-Servo ESC;
-Encoder winchEncoder(2,3);
+Servo ESC; //Create ESC object
+Encoder winchEncoder(2,3); //Create encoder object
 
 int parameters[7];
 int incomingByte = 0;
@@ -42,7 +45,17 @@ void setup() {
   delay(4000);
   ESC.write(90);
   delay(6000);
+  
   pinMode(13, OUTPUT);
+  pinMode(remoteStart, OUTPUT);
+  pinMode(remoteStop, OUTPUT);
+  pinMode(remoteStartLED, OUTPUT);
+  pinMode(remoteStopLED, OUTPUT);
+  
+  digitalWrite(remoteStart, LOW);
+  digitalWrite(remoteStop, HIGH);
+  digitalWrite(remoteStartLED, LOW);
+  digitalWrite(remoteStopLED, LOW);
 }
 
 void loop() {
@@ -53,22 +66,22 @@ void loop() {
       while(Serial.available() < 7) {} //Wait for buffer to fill then save values in parameter array
       for (int i = 0; i < 7; i++){
         incomingByte = Serial.read();
-        parameters[i] = incomingByte;
+        parameters[i] = incomingByte; //Save serial data into array
         digitalWrite(13, HIGH);
       }
       delay(500);
       digitalWrite(13, LOW); //Blink LED to indicate completion of data transmission
       
-      header = parameters[1];
-      winchSpeedOut = parameters[1]; //save array contents to corisponding variables
+      header = parameters[0];
+      winchSpeedOut = parameters[1]; //Save array contents to corisponding variables
       winchSpeedIn = parameters[2];
       upperByte = parameters[3];
       lowerByte = parameters[4];
       checksum = parameters[5];
       
-      if(checksum != (((winchSpeedOut ^ winchSpeedIn) ^ upperByte) ^ lowerByte)){
+      if(checksum != (((winchSpeedOut ^ winchSpeedIn) ^ upperByte) ^ lowerByte)){ //Check to make sure data was received without corruption
         Serial.print("ERROR: Data is corrupted.");
-        state = receiveData; //return to same state without powering winch
+        state = receiveData; //Return to same state without powering winch
       }
       else if(header == 255)
         state = takeProfile;
@@ -82,9 +95,10 @@ void loop() {
         state = remoteStart;
       else if (header == 0xEE)
         state = remoteStop;
+      //state = takeProfile; //This is for trouble shooting and should be removed. It negates the entire if statement.
       break;
     
-    case takeProfile:     
+    case takeProfile:   
       upperByte = upperByte << 8;
       depth = upperByte + lowerByte;
       depth = depth * 1000; //pings/meter ratio (current is place holder)
@@ -94,16 +108,59 @@ void loop() {
       maxWinchSpeedOut = 90 + maxSpeedOut;
       maxWinchSpeedIn = 90 - maxSpeedIn;
   
-      while(winchEncoder.read() < (depth - 200000)) //send winch out
+      while(winchEncoder.read() < (depth - 200000)){ //send winch out
         ESC.write(maxWinchSpeedOut);
-      while(winchEncoder.read() < (depth - 100000))
+        if(Serial.available()){
+          ESC.write(maxWinchSpeedOut*.9);
+          delay(100);
+          ESC.write(maxWinchSpeedOut*.8);
+          delay(100);
+          ESC.write(maxWinchSpeedOut*.7);
+          delay(100);
+          ESC.write(maxWinchSpeedOut*.6);
+          delay(100);
+          ESC.write(90);
+          state = receiveData;
+          return;
+        }
+      }
+      while(winchEncoder.read() < (depth - 100000)){ 
         ESC.write(maxWinchSpeedOut*.9); 
-      while(winchEncoder.read() < (depth - 10000))
+        if(Serial.available()){ //Stop if a new serial data is sent
+          ESC.write(maxWinchSpeedOut*.8);
+          delay(100);
+          ESC.write(maxWinchSpeedOut*.7);
+          delay(100);
+          ESC.write(maxWinchSpeedOut*.6);
+          delay(100);
+          ESC.write(90);
+          state = receiveData;
+          return;
+        }
+      }
+
+      while(winchEncoder.read() < (depth - 10000)){ 
         ESC.write(maxWinchSpeedOut*.7);
-      while(winchEncoder.read() < (depth))
+        if(Serial.available()){
+          ESC.write(maxWinchSpeedOut*.6);
+          delay(100);
+          ESC.write(90);
+          state = receiveData;
+          return;;
+        }
+      }
+
+      while(winchEncoder.read() < (depth)){ 
         ESC.write(maxWinchSpeedOut*.6); 
+        if(Serial.available()){
+          ESC.write(90);
+          state = receiveData;
+          return;
+        }
+      }
+
       ESC.write(90);
-      
+      delay(1000);
       while(winchEncoder.read() > 200000) //bring back in
         ESC.write(maxWinchSpeedIn);
       while(winchEncoder.read() > 100000)
@@ -132,16 +189,21 @@ void loop() {
       break;
     
     case remoteStart:
-      digitalWrite(remStartPin, HIGH);
-      delay(5000);
-      digitalWrite(remStartPin, LOW);
+      digitalWrite(remoteStop, LOW);
+      digitalWrite(remoteStart, HIGH);
+      digitalWrite(remoteStartLED, HIGH);
+      delay(startTime);
+      digitalWrite(remoteStart, LOW);
+      delay(2000-startTime);
+      digitalWrite(remoteStartLED, LOW);
       state = receiveData;
       break;
       
     case remoteStop:
-      digitalWrite(remStopPin, HIGH);
-      delay(5000);
-      digitalWrite(remStopPin, LOW);
+      digitalWrite(remoteStop, HIGH);
+      digitalWrite(remoteStopLED, HIGH);
+      delay(2000);
+      digitalWrite(remoteStopLED, LOW);
       state = receiveData;
       break;
       
@@ -150,3 +212,5 @@ void loop() {
       break;
   } 
 }
+
+
