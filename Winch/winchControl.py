@@ -33,22 +33,22 @@ footer = 255
 
 parameters = [header , speedOut, speedIn, upperDepthByte, lowerDepthByte, checksum, footer] #Save parameters in array
 
-if stop != 0:
-	if stop == 1:
-		for x in parameters:
-			x = 0xAA
-	elif stop == 2:
-		for x in parameters:
-			x = 0xBB
-	elif stop == 4:
-		for x in parameters:
-			x = 0xCC	
-	elif stop == 8:
-		for x in parameters:
-			x = 0xDD
-	elif stop == 16:
-		for x in parameters:
-			x = 0xEE
+
+if stop == 1:
+	for x in range(len(parameters)):
+		parameters[x] = 0xAA
+elif stop == 2:
+	for x in range(len(parameters)):
+		parameters[x] = 0xBB
+elif stop == 4:
+	for x in range(len(parameters)):
+		parameters[x] = 0xCC	
+elif stop == 8:
+	for x in range(len(parameters)):
+		parameters[x] = 0xDD
+elif stop == 16:
+	for x in range(len(parameters)):
+		parameters[x] = 0xEE
 
 print parameters
 
