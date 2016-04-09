@@ -34,6 +34,7 @@ int maxSpeedIn;
 int maxWinchSpeedOut;
 int maxWinchSpeedIn;
 int depth;
+bool motorRunning = false;
 
 void setup() {
   // put your setup code here, to run once:
@@ -95,7 +96,6 @@ void loop() {
         state = remoteStart;
       else if (header == 0xEE)
         state = remoteStop;
-      //state = takeProfile; //This is for trouble shooting and should be removed. It negates the entire if statement.
       break;
     
     case takeProfile:   
@@ -108,69 +108,12 @@ void loop() {
       maxWinchSpeedOut = 90 + maxSpeedOut;
       maxWinchSpeedIn = 90 - maxSpeedIn;
   
-      while(winchEncoder.read() < (depth - 200000)){ //send winch out
-        ESC.write(maxWinchSpeedOut);
-        if(Serial.available()){
-          ESC.write(maxWinchSpeedOut*.9);
-          delay(100);
-          ESC.write(maxWinchSpeedOut*.8);
-          delay(100);
-          ESC.write(maxWinchSpeedOut*.7);
-          delay(100);
-          ESC.write(maxWinchSpeedOut*.6);
-          delay(100);
-          ESC.write(90);
-          state = receiveData;
-          return;
-        }
-      }
-      while(winchEncoder.read() < (depth - 100000)){ 
-        ESC.write(maxWinchSpeedOut*.9); 
-        if(Serial.available()){ //Stop if a new serial data is sent
-          ESC.write(maxWinchSpeedOut*.8);
-          delay(100);
-          ESC.write(maxWinchSpeedOut*.7);
-          delay(100);
-          ESC.write(maxWinchSpeedOut*.6);
-          delay(100);
-          ESC.write(90);
-          state = receiveData;
-          return;
-        }
-      }
-
-      while(winchEncoder.read() < (depth - 10000)){ 
-        ESC.write(maxWinchSpeedOut*.7);
-        if(Serial.available()){
-          ESC.write(maxWinchSpeedOut*.6);
-          delay(100);
-          ESC.write(90);
-          state = receiveData;
-          return;;
-        }
-      }
-
-      while(winchEncoder.read() < (depth)){ 
-        ESC.write(maxWinchSpeedOut*.6); 
-        if(Serial.available()){
-          ESC.write(90);
-          state = receiveData;
-          return;
-        }
-      }
-
+      lineOut(maxWinchSpeedOut, depth);
       ESC.write(90);
       delay(1000);
-      while(winchEncoder.read() > 200000) //bring back in
-        ESC.write(maxWinchSpeedIn);
-      while(winchEncoder.read() > 100000)
-        ESC.write(maxWinchSpeedIn + .2*maxSpeedIn);
-      while(winchEncoder.read() > 10000)
-        ESC.write(maxWinchSpeedIn + .5*maxSpeedIn);
-      while(winchEncoder.read() > 0)
-        ESC.write(maxWinchSpeedIn + .8*maxSpeedIn);
-      ESC.write(90);
+      lineIn(maxWinchSpeedIn, maxSpeedIn);
       
+      ESC.write(90);
       winchEncoder.write(0); //reset count to prevent error propagatoin
       state = receiveData;
       break;
@@ -189,13 +132,16 @@ void loop() {
       break;
     
     case remoteStart:
-      digitalWrite(remoteStop, LOW);
-      digitalWrite(remoteStart, HIGH);
-      digitalWrite(remoteStartLED, HIGH);
-      delay(startTime);
-      digitalWrite(remoteStart, LOW);
-      delay(2000-startTime);
-      digitalWrite(remoteStartLED, LOW);
+      if (motorRunning == false){ //Prevent remote start from executing if motor already running
+        digitalWrite(remoteStop, LOW);
+        digitalWrite(remoteStart, HIGH);
+        digitalWrite(remoteStartLED, HIGH);
+        delay(startTime);
+        digitalWrite(remoteStart, LOW);
+        delay(2000-startTime);
+        digitalWrite(remoteStartLED, LOW);
+        motorRunning = true;
+      }
       state = receiveData;
       break;
       
@@ -204,6 +150,7 @@ void loop() {
       digitalWrite(remoteStopLED, HIGH);
       delay(2000);
       digitalWrite(remoteStopLED, LOW);
+      motorRunning = false;
       state = receiveData;
       break;
       
@@ -212,5 +159,96 @@ void loop() {
       break;
   } 
 }
+
+void softStopOut(int upperValue, int multiplyer){
+  for(int x = multiplyer; x > .5; x = x - .1){
+    int newVal = upperValue*x;
+    if(newVal > 90)
+      ESC.write(newVal);
+    else
+      ESC.write(90);
+    delay(100);
+  }
+  ESC.write(90);
+  state = receiveData;
+}
+
+void softStopIn(int maximum){
+  for(int x = 0; x  < 90; x = x + 18){
+    int newVal = maximum + x;
+    if(newVal < 90)
+      ESC.write(newVal);
+     else
+       ESC.write(90);
+     delay(100);
+  }
+  ESC.write(90);
+  state = receiveData;
+}
+
+void lineOut(int maxSpeed, int dist){
+  while(winchEncoder.read() < (dist - 200000)){ //Let line out
+    ESC.write(maxSpeed);
+    if(Serial.available()){
+      softStopOut(maxSpeed, .9);
+      return;
+    }
+  }    
+  while(winchEncoder.read() < (dist - 100000)){ 
+    ESC.write(maxSpeed*.9); 
+    if(Serial.available()){ //Stop if new serial data is sent
+      softStopOut(maxSpeed, .8);
+      return;
+    }
+  }
+  while(winchEncoder.read() < (dist - 10000)){ 
+    ESC.write(maxWinchSpeedOut*.7);
+    if(Serial.available()){
+      softStopOut(maxSpeed, .6);
+      return;
+    }
+  }
+  while(winchEncoder.read() < (dist)){ 
+    ESC.write(maxSpeed*.6); 
+    if(Serial.available()){
+      softStopOut(maxSpeed, .5);
+      return;
+    }
+  }
+}
+
+void lineIn(int fullSpeed, int maxSpeed){
+  while(winchEncoder.read() > 200000){ //Bring line back in
+      ESC.write(fullSpeed);
+      if(Serial.available()){
+        softStopIn(fullSpeed);
+        return;
+      }
+  }
+  while(winchEncoder.read() > 100000){
+    ESC.write(fullSpeed + .2*maxSpeed);
+    if(Serial.available()){
+      softStopIn(fullSpeed + .2*maxSpeed);
+      return;
+    }
+  }
+  while(winchEncoder.read() > 10000){
+    ESC.write(fullSpeed + .5*maxSpeed);
+    if(Serial.available()){
+      softStopIn(fullSpeed + .5*maxSpeed);
+      return;
+    }
+  }
+  while(winchEncoder.read() > 0){
+    ESC.write(fullSpeed + .8*maxSpeed);
+    if(Serial.available()){
+      softStopIn(fullSpeed + .8*maxSpeed);
+      return;
+    }
+  }
+}
+
+
+
 
 
