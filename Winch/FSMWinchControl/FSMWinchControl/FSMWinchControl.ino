@@ -38,6 +38,7 @@ bool motorRunning = false;
 
 void setup() {
   // put your setup code here, to run once:
+  delay(10000);
   Serial.begin(9600);
   ESC.attach(9);
   ESC.write(180);
@@ -107,23 +108,27 @@ void loop() {
       maxSpeedIn = winchSpeedIn*90/254;
       maxWinchSpeedOut = 90 + maxSpeedOut;
       maxWinchSpeedIn = 90 - maxSpeedIn;
-  
-      lineOut(maxWinchSpeedOut, depth);
-      ESC.write(90);
-      delay(1000);
-      lineIn(maxWinchSpeedIn, maxSpeedIn);
+      bool interrupted;
       
-      ESC.write(90);
-      winchEncoder.write(0); //reset count to prevent error propagatoin
+      interrupted = lineOut(maxWinchSpeedOut, depth);
+      if(interrupted == false){
+        ESC.write(90);
+        delay(1000);
+        lineIn(maxWinchSpeedIn, maxSpeedIn);
+        ESC.write(90);
+        winchEncoder.write(0); //reset count to prevent error propagatoin
+      }
       state = receiveData;
       break;
       
     case fastIn:
-      //fast in code
+      lineIn(0,90);
+      state = receiveData;
       break;
       
     case slowIn:
-      //fast out code
+      lineIn(45,45);
+      state = receiveData;
       break;
       
     case halt:
@@ -186,35 +191,36 @@ void softStopIn(int maximum){
   state = receiveData;
 }
 
-void lineOut(int maxSpeed, int dist){
+bool lineOut(int maxSpeed, int dist){
   while(winchEncoder.read() < (dist - 200000)){ //Let line out
     ESC.write(maxSpeed);
     if(Serial.available()){
       softStopOut(maxSpeed, .9);
-      return;
+      return true;
     }
   }    
   while(winchEncoder.read() < (dist - 100000)){ 
     ESC.write(maxSpeed*.9); 
     if(Serial.available()){ //Stop if new serial data is sent
       softStopOut(maxSpeed, .8);
-      return;
+      return true;
     }
   }
   while(winchEncoder.read() < (dist - 10000)){ 
     ESC.write(maxWinchSpeedOut*.7);
     if(Serial.available()){
       softStopOut(maxSpeed, .6);
-      return;
+      return true;
     }
   }
   while(winchEncoder.read() < (dist)){ 
     ESC.write(maxSpeed*.6); 
     if(Serial.available()){
       softStopOut(maxSpeed, .5);
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 void lineIn(int fullSpeed, int maxSpeed){
@@ -248,7 +254,19 @@ void lineIn(int fullSpeed, int maxSpeed){
   }
 }
 
+int outCheck(int numberCheck){
+  if (numberCheck < 90)
+    return 100;
+  else
+    return numberCheck;
+}
 
+int inCheck(int numberCheck){
+  if(numberCheck > 90)
+    return 80;
+  else
+    return numberCheck;
+}
 
 
 
