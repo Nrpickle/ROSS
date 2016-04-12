@@ -38,7 +38,7 @@ bool motorRunning = false;
 
 void setup() {
   // put your setup code here, to run once:
-  delay(10000);
+  delay(5000); //Increase for final revision
   Serial.begin(9600);
   ESC.attach(9);
   ESC.write(180);
@@ -65,26 +65,18 @@ void loop() {
   switch(state){ 
     
     case receiveData:
-      while(Serial.available() < 7) {} //Wait for buffer to fill then save values in parameter array
-      for (int i = 0; i < 7; i++){
-        incomingByte = Serial.read();
-        parameters[i] = incomingByte; //Save serial data into array
-        digitalWrite(13, HIGH);
-      }
-      delay(500);
-      digitalWrite(13, LOW); //Blink LED to indicate completion of data transmission
+      saveData();
       
-      header = parameters[0];
-      winchSpeedOut = parameters[1]; //Save array contents to corisponding variables
-      winchSpeedIn = parameters[2];
-      upperByte = parameters[3];
-      lowerByte = parameters[4];
-      checksum = parameters[5];
+      if(ESC.read() > 90)
+        softStopOut(ESC.read());
+      else if(ESC.read() < 90)
+        softStopIn(ESC.read());
       
-      if(checksum != (((winchSpeedOut ^ winchSpeedIn) ^ upperByte) ^ lowerByte)){ //Check to make sure data was received without corruption
-        Serial.print("ERROR: Data is corrupted.");
-        state = receiveData; //Return to same state without powering winch
-      }
+//      if(checksum != (((winchSpeedOut ^ winchSpeedIn) ^ upperByte) ^ lowerByte)){ //Check to make sure data was received without corruption
+//        Serial.print("ERROR: Data is corrupted.");
+//        state = receiveData; //Return to same state without powering winch
+//      }
+      
       else if(header == 255)
         state = takeProfile;
       else if(header == 0xAA)
@@ -111,23 +103,25 @@ void loop() {
       bool interrupted;
       
       interrupted = lineOut(maxWinchSpeedOut, depth);
+
       if(interrupted == false){
-        ESC.write(90);
+        //ESC.write(90);
         delay(1000);
-        lineIn(maxWinchSpeedIn, maxSpeedIn);
-        ESC.write(90);
+        lineIn(maxWinchSpeedIn);
+        //ESC.write(90);
         winchEncoder.write(0); //reset count to prevent error propagatoin
       }
       state = receiveData;
       break;
       
     case fastIn:
-      lineIn(0,90);
+      digitalWrite(13,HIGH);
+      lineIn(0);
       state = receiveData;
       break;
       
     case slowIn:
-      lineIn(45,45);
+      lineIn(45);
       state = receiveData;
       break;
       
@@ -135,7 +129,7 @@ void loop() {
       ESC.write(90);
       state = receiveData;
       break;
-    
+      
     case remoteStart:
       if (motorRunning == false){ //Prevent remote start from executing if motor already running
         digitalWrite(remoteStop, LOW);
@@ -163,110 +157,138 @@ void loop() {
       state = receiveData;
       break;
   } 
-}
+} //END OF LOOP FUNCTION
 
-void softStopOut(int upperValue, int multiplyer){
-  for(int x = multiplyer; x > .5; x = x - .1){
-    int newVal = upperValue*x;
-    if(newVal > 90)
-      ESC.write(newVal);
-    else
-      ESC.write(90);
-    delay(100);
-  }
-  ESC.write(90);
-  state = receiveData;
-}
-
-void softStopIn(int maximum){
-  for(int x = 0; x  < 90; x = x + 18){
-    int newVal = maximum + x;
-    if(newVal < 90)
-      ESC.write(newVal);
-     else
-       ESC.write(90);
-     delay(100);
-  }
-  ESC.write(90);
-  state = receiveData;
-}
-
+//Let line out at maximum speed and slow as sensor reaches destination
 bool lineOut(int maxSpeed, int dist){
-  while(winchEncoder.read() < (dist - 200000)){ //Let line out
+  while(winchEncoder.read() < (dist - 40000)){ //Let line out
     ESC.write(maxSpeed);
     if(Serial.available()){
-      softStopOut(maxSpeed, .9);
+      return true;
+    }
+  }
+  while(winchEncoder.read() < (dist - 30000)){ //Let line out
+    ESC.write(valComp(160, maxSpeed, false));
+    if(Serial.available()){
+      softStopOut(valComp(160, maxSpeed, false));
       return true;
     }
   }    
-  while(winchEncoder.read() < (dist - 100000)){ 
-    ESC.write(maxSpeed*.9); 
+  while(winchEncoder.read() < (dist - 20000)){ 
+    ESC.write(valComp(145, maxSpeed, false)); 
     if(Serial.available()){ //Stop if new serial data is sent
-      softStopOut(maxSpeed, .8);
+      softStopOut(valComp(145, maxSpeed, false));
       return true;
     }
   }
   while(winchEncoder.read() < (dist - 10000)){ 
-    ESC.write(maxWinchSpeedOut*.7);
+    ESC.write(valComp(130, maxSpeed, false));
     if(Serial.available()){
-      softStopOut(maxSpeed, .6);
+      softStopOut(valComp(130, maxSpeed, false));
       return true;
     }
   }
   while(winchEncoder.read() < (dist)){ 
-    ESC.write(maxSpeed*.6); 
+    ESC.write(valComp(115, maxSpeed, false)); 
     if(Serial.available()){
-      softStopOut(maxSpeed, .5);
+      softStopOut(valComp(115, maxSpeed, false));
       return true;
     }
   }
+  ESC.write(90);
   return false;
 }
 
-void lineIn(int fullSpeed, int maxSpeed){
-  while(winchEncoder.read() > 200000){ //Bring line back in
-      ESC.write(fullSpeed);
+//Take line back in at maximum speed and slow as sensor nears boat
+void lineIn(int maxSpeed){
+  while(winchEncoder.read() > 40000){ //Bring line back in
+      ESC.write(maxSpeed);
       if(Serial.available()){
-        softStopIn(fullSpeed);
+        //saveData();
+        softStopIn(maxSpeed);
         return;
       }
   }
-  while(winchEncoder.read() > 100000){
-    ESC.write(fullSpeed + .2*maxSpeed);
+  while(winchEncoder.read() > 30000){ //Bring line back in
+      ESC.write(valComp(20, maxSpeed, true));
+      if(Serial.available()){
+        softStopIn(valComp(20, maxSpeed, true));
+        return;
+      }
+  }
+  while(winchEncoder.read() > 20000){
+    ESC.write(valComp(35, maxSpeed, true));
     if(Serial.available()){
-      softStopIn(fullSpeed + .2*maxSpeed);
+      softStopIn(valComp(35, maxSpeed, true));
       return;
     }
   }
   while(winchEncoder.read() > 10000){
-    ESC.write(fullSpeed + .5*maxSpeed);
+    ESC.write(valComp(50, maxSpeed, true));
     if(Serial.available()){
-      softStopIn(fullSpeed + .5*maxSpeed);
+      softStopIn(valComp(50, maxSpeed, true));
       return;
     }
   }
   while(winchEncoder.read() > 0){
-    ESC.write(fullSpeed + .8*maxSpeed);
+    ESC.write(valComp(65, maxSpeed, true));
     if(Serial.available()){
-      softStopIn(fullSpeed + .8*maxSpeed);
+      softStopIn(valComp(65, maxSpeed, true));
       return;
     }
   }
+  ESC.write(90);
 }
 
-int outCheck(int numberCheck){
-  if (numberCheck < 90)
-    return 100;
+//Prevent damage to winch when stopping
+void softStopOut(int currentSpeed){
+  for(int x = currentSpeed; x > 90; x = x - 10){
+    ESC.write(x);
+    delay(100);
+  }
+  ESC.write(90);  
+}
+
+//Prevent damage to winch when stopping
+void softStopIn(int currentSpeed){
+  for(int x = currentSpeed; x < 90; x = x + 10){
+    ESC.write(x);
+    delay(100);
+  }
+  ESC.write(90);  
+}
+
+void saveData(){
+  while(Serial.available() < 7) {} //Wait for buffer to fill then save values in parameter array
+  for (int i = 0; i < 7; i++){
+    incomingByte = Serial.read();
+    parameters[i] = incomingByte; //Save serial data into array
+  }
+  header = parameters[0];
+  winchSpeedOut = parameters[1]; //Save array contents to corisponding variables
+  winchSpeedIn = parameters[2];
+  upperByte = parameters[3];
+  lowerByte = parameters[4];
+  checksum = parameters[5];  
+}
+
+//Compares a value to a maximum and returnes either the value or the max depending on wether the value should be greater or less than the max
+int valComp(int value, int maxValue, bool lineIn){
+  if((value > maxValue && lineIn == true)||(value < maxValue && lineIn == false))
+    return value;
+  else if((value > maxValue && lineIn == false)||(value < maxValue && lineIn == true))
+    return maxValue;
   else
-    return numberCheck;
+    return value; //If the values are equal
 }
 
-int inCheck(int numberCheck){
-  if(numberCheck > 90)
-    return 80;
-  else
-    return numberCheck;
+void blinkLED(int numberOfBlinks){
+  for(int x = 0; x < numberOfBlinks; x++){
+    digitalWrite(13, HIGH);
+    delay(1000);
+    digitalWrite(13, LOW);
+    delay(1000);
+  } 
 }
-
 
 
