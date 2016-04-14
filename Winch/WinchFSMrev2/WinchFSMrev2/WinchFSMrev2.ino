@@ -2,21 +2,22 @@
 
 #include <Servo.h>
 #include <Encoder.h>
+#include <Timer.h>
 
 //Define states
 #define checkBuffer 0
 #define controlWinch 1
-#define sendStatus 2
 
 //Define remote start/stop pins
 #define remoteStartPin 5
 #define remoteStopPin 6
 #define remoteStartLED 7
 #define remoteStopLED 8
-#define startTime 750 //How long to hold remote start HIGH
+#define startTime 750 //How long remote start is held HIGH
 
 Servo ESC; //Create ESC object
 Encoder winchEncoder(2,3); //Create encoder object
+Timer statusTimer; //Create timer object
 
 int parameters[7];
 int incomingByte = 0;
@@ -38,7 +39,7 @@ bool halt = false;
 
 void setup() {
   // put your setup code here, to run once:
-   Serial.begin(9600);
+  Serial.begin(9600);
   delay(5000); //Ensure the winch is powered on before calibration sequence begins //Increase for final revision
   ESC.attach(9);//Begin calibration sequence
   ESC.write(180);
@@ -58,10 +59,12 @@ void setup() {
   digitalWrite(remoteStopPin, HIGH);
   digitalWrite(remoteStartLED, LOW);
   digitalWrite(remoteStopLED, LOW);
+  statusTimer.every(5000000, sendStatus);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  statusTimer.update();
   switch(state){
     case checkBuffer:
       if(buffSize == 7)
@@ -97,9 +100,7 @@ void loop() {
       else if(header == 0xEE)
         remoteStop();
       state = checkBuffer;
-    break;
-    
-    
+    break; 
   }
 }
 
@@ -211,4 +212,13 @@ void remoteStop(){
     digitalWrite(remoteStopLED, LOW);
     motorRunning = false;
   }
+}
+
+void sendStatus(){
+  Serial.print("Speed: ");
+  Serial.print(ESC.read());//Convert into RPM
+  Serial.print("RPM");
+  Serial.print(); //New line
+  
+  
 }
