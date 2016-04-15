@@ -16,7 +16,7 @@
 #define startTime 750 //How long remote start is held HIGH
 
 Servo ESC; //Create ESC object
-Encoder winchEncoder(2,3); //Create encoder object
+Encoder winchEncoder(3,2); //Create encoder object
 Timer statusTimer; //Create timer object
 
 int parameters[7];
@@ -31,6 +31,7 @@ int checksum;
 int buffSize = 0;
 int speedOut;
 int speedIn;
+int currentSpeed;
 long long depth;
 bool motorRunning = false;
 bool depthReached = false;
@@ -165,7 +166,7 @@ void takeProfile(){
 }
 
 bool softStop(){
-  int currentSpeed = ESC.read();
+  currentSpeed = ESC.read();
   if(currentSpeed > 90){ //If letting line out
     for(int x = currentSpeed; x > 90; x = x - 10){
       ESC.write(x);
@@ -189,7 +190,6 @@ bool softStop(){
     return true;
   }
 }
-
   
 void remoteStart(){
   if (motorRunning == false){ //Prevent remote start from executing if motor already running
@@ -215,10 +215,13 @@ void remoteStop(){
 }
 
 void sendStatus(){
+  currentSpeed = ESC.read();
+  
   Serial.print("Speed: ");
-  Serial.print(ESC.read());//Convert into RPM
+  
   Serial.print("RPM");
-  Serial.print(); //New line
+  Serial.println(); //New line
+  
   
   
 }
