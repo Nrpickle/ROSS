@@ -1,13 +1,16 @@
+#!/usr/bin/python
 import os
 import time
 from sys import argv
 
-HighRes = False
-if argv[1] == 'H':
-	HighRes = True
+
+if len(argv) == 2 and argv[1] == 'H':
+	os.system("fswebcam -r 1920x1080 --no-banner /home/pi/Pictures/HighRes/1080p-%s.jpg" %time.strftime("%Y-%m-%dT%H%M%S"))
 	
-if HighRes == True:
-	os.system("fswebcam -r 1920x1080 --no-banner --save /home/pi/Picures/HighRes/1080p-%s.jpg" %time.strftime("%Y-%m-%dT%H%M%S"))
-	
+elif len(argv) == 1:
+	os.system("fswebcam -r 320x180 /home/pi/Pictures/LowRes/200p-%s.jpg" %time.strftime("%Y-%m-%dT%H%M%S"))
+
 else:
-	os.system("fswebcam -r 320x200 --save /home/pi/Picures/LowRes/200p-%s.jpg" %time.strftime("%Y-%m-%dT%H%M%S"))
+        print "ERROR: Improper arguments."
+
+
