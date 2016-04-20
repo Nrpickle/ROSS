@@ -41,6 +41,8 @@ bool halt = false;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(13, OUTPUT); //Remove for final revision
+  digitalWrite(13, HIGH); //Remove after debugging
   delay(5000); //Ensure the winch is powered on before calibration sequence begins //Increase for final revision
   ESC.attach(9);//Begin calibration sequence
   ESC.write(180);
@@ -50,7 +52,6 @@ void setup() {
   ESC.write(90);
   delay(6000);
   
-  pinMode(13, OUTPUT); //Remove for final revision
   pinMode(remoteStartPin, OUTPUT);
   pinMode(remoteStopPin, OUTPUT);
   pinMode(remoteStartLED, OUTPUT);
@@ -60,7 +61,7 @@ void setup() {
   digitalWrite(remoteStopPin, HIGH);
   digitalWrite(remoteStartLED, LOW);
   digitalWrite(remoteStopLED, LOW);
-  statusTimer.every(5000000, sendStatus);
+  statusTimer.every(5000, sendStatus);
 }
 
 void loop() {
@@ -215,12 +216,14 @@ void remoteStop(){
 }
 
 void sendStatus(){
-  currentSpeed = ESC.read();
-  
-  Serial.print("Speed: ");
-  
-  Serial.print("RPM");
-  Serial.println(); //New line
+//  currentSpeed = ESC.read();
+//  
+//  Serial.print("Speed: ");
+//  
+//  Serial.print("RPM");
+//  Serial.println(); //New line
+
+Serial.println("Test message");
   
   
   
