@@ -43,8 +43,8 @@ bool halt = false;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  pinMode(13, OUTPUT); //Remove for final revision
-  digitalWrite(13, HIGH); //Remove after debugging
+  //pinMode(13, OUTPUT); //Remove for final revision
+  //digitalWrite(13, HIGH); //Remove after debugging
   delay(5000); //Ensure the winch is powered on before calibration sequence begins //Increase for final revision
   ESC.attach(9);//Begin calibration sequence
   ESC.write(180);
@@ -138,7 +138,7 @@ void updateParameters(){
 
 void takeProfile(){
    if(depthReached == false){
-    if(digitalRead(down) == false)//Slowly let A-frame down from upright position
+    if(!digitalRead(down) == false)//Slowly let A-frame down from upright position
       ESC.write(110);
     else if(winchEncoder.read() < (depth - 40000)) //Increase to full speed once A-fram is down
       ESC.write(speedOut);
@@ -157,10 +157,8 @@ void takeProfile(){
     }
   }
   else if(depthReached == true && halt == false){
-    if(digitalRead(up) == true) //Stop when A-frame is in full upright position
+    if(!digitalRead(up) == true) //Stop when A-frame is in full upright position
       ESC.write(90);
-    else if(digitalRead(down) == false && digitalRead(up) == false) //Slow down when A-fram lifts up. If down switch fails, this statement will execute until A-frame is fully upright
-      ESC.write(70);
     else if(winchEncoder.read() > 40000)
       ESC.write(speedIn);
     else if(winchEncoder.read() > 30000)
@@ -171,6 +169,8 @@ void takeProfile(){
       ESC.write(max(50, speedIn));
     else if(winchEncoder.read() > 0)
       ESC.write(max(65, speedIn));
+    else if(!digitalRead(down) == false && digitalRead(up) == false) //Slow down when A-fram lifts up
+      ESC.write(70);
     else if(winchEncoder.read() <= 0) //Winch will still stop if switches fail
       ESC.write(90);  
   }
