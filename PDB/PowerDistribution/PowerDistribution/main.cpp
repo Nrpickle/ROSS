@@ -28,17 +28,18 @@ int main(void)
 {
 	configureIO();
 	configureExternalOscillator();
-	configureUSART();	//Set up for 57600 Baud
+	configureUSART();					//Set up for 57600 Baud
 	configureTimerCounter();
 	configureADCs();
 
 	//PMIC.CTRL |= PMIC_LOLVLEN_bm;
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
-	sei();
+	sei();								//Enable global interrupts
 	
 	uint8_t receivedUSARTData;
 	
+	//Init string with basic documentation
 	SendStringPC((char *)"#[INIT ROSS PDB]\n\r");
 	SendStringPC((char *)"#Firmware version ");
 	SendStringPC((char *)FIRMWARE_VERSION_STR);
