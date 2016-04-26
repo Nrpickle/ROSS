@@ -6,6 +6,7 @@
  */ 
 
 #include "usartROSS.h"
+#include <stdio.h>
 
 //Sends a string to the computer
 void SendStringPC(char *stufftosend){
@@ -18,6 +19,19 @@ void SendStringPC(char *stufftosend){
 void SendNumPC(uint16_t numToSend){
 	char buffer[20];
 	itoa(numToSend, buffer, 10);
+	SendStringPC(buffer);
+}
+
+void SendFloatPC(double numToSend){
+	char buffer[100];
+	
+	int d1 = numToSend;
+	float f2 = numToSend - d1;
+	int d2 = trunc(f2 * 10000);
+	
+	sprintf(buffer, "%d.%04d", d1, abs(d2));
+	
+	//sprintf(buffer, "%f", numToSend);
 	SendStringPC(buffer);
 }
 
