@@ -43,3 +43,10 @@ Temporary Items
 .apdisk
 
 # Atmel Studio Files
+*.hex
+*.elf
+*.lss
+*.map
+*.srec
+*.d
+*.o
