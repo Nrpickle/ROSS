@@ -3,6 +3,7 @@
 #include <SoftwareSerial.h>
 #include <SD.h>
 #include <avr/sleep.h>
+#include <Adafruit_NeoPixel.h> 
 
 SoftwareSerial mySerial(8, 7);
 Adafruit_GPS GPS(&mySerial);
@@ -12,14 +13,11 @@ Adafruit_GPS GPS(&mySerial);
 
 boolean usingInterrupt = false; //Set to true to use interrupt
 
-bool started = false;
-#define startPin //Goes high upon button push. NC switch connects to GND. Pulled up internally.
-#define startLED //Illuminates when start button is pushed
-#define startMotor //Starts the motor when held high
-#define startTime //How long startMotor is held high (in milliseconds)
-#define stopPin
-#define stopLED
-#define stopMotor
+#define startPin 4//Goes high upon button push. NC switch connects to GND. Pulled up internally.
+#define startLED 5 //Illuminates when start button is pushed
+#define stopPin 2
+#define stopLED 3
+#define LEDRing 6
 
 // Set the pins used
 #define chipSelect 10
@@ -63,11 +61,16 @@ void error(uint8_t errno) {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600); //Increase if echoing to serial monitor 
   Serial.println("\r\nUltimate GPSlogger Shield");
   pinMode(ledPin, OUTPUT);
 
   pinMode(10, OUTPUT); //Default chip select
+  pinMode(startPin, INPUT_PULLUP);
+  pinMode(startLED, OUTPUT);
+  pinMode(stopPin, INPUT_PULLUP);
+  pinMode(startLED, OUTPUT);
+  pinMode(LEDRing, OUTPUT);
 
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
@@ -183,25 +186,19 @@ void loop() {
   }
 }
 
-void localStart{
-  if(started == false){
-    digitalWrite(stopMotor, LOW);
-    digitalWrite(startMotor, HIGH);
-    delay(startTime);
-    digitalWrite(startMotor, LOW);
-    pulseLED(startLED);
-    started = true;
-  }
-  else
-    flickerLED(startLED);
+void localStart(){
+  Serial.write(10);
+  pulseLED(startLED);
 }
 
-void localStop{
-  if(started == true){
-    digitalWrite(startMotor, LOW); //Redundant for safety
-    digitalWrite(stopMotor, HIGH); //Keep stop held high
-    pulseLED(stopLED);
-  }
-  else
-    flickerLED(stopLED);
+void localStop(){
+  Serial.write(20);
+  pulseLED(stopLED);
+}
+
+void pulseLED(int led){
+  for(int i = 0; i < 100; i++)
+    analogWrite(led, i);
+  for(int i = 100; i > 0; i--)
+    analogWrite(led, i);
 }
