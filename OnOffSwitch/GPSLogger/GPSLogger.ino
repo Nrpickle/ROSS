@@ -61,7 +61,7 @@ void error(uint8_t errno) {
 }
 
 void setup() {
-  Serial.begin(9600); //Increase if echoing to serial monitor 
+  Serial.begin(115200); //Increase if echoing to serial monitor 
   Serial.println("\r\nUltimate GPSlogger Shield");
   pinMode(ledPin, OUTPUT);
 
@@ -71,6 +71,8 @@ void setup() {
   pinMode(stopPin, INPUT_PULLUP);
   pinMode(startLED, OUTPUT);
   pinMode(LEDRing, OUTPUT);
+  analogWrite(startLED, 127);
+  analogWrite(stopLED, 127);
 
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
@@ -142,9 +144,9 @@ void useInterrupt(boolean v) {
 }
 
 void loop() {
-  if(startPin == HIGH)
+  if(digitalRead(startPin) == HIGH)
     localStart();
-  if(stopPin == HIGH)
+  if(digitalRead(stopPin) == HIGH)
     localStop();
   if (! usingInterrupt) {
     // read data from the GPS in the 'main loop'
@@ -197,8 +199,12 @@ void localStop(){
 }
 
 void pulseLED(int led){
-  for(int i = 0; i < 100; i++)
-    analogWrite(led, i);
-  for(int i = 100; i > 0; i--)
-    analogWrite(led, i);
+  float per = 90;
+  float freq = 1.0/per;
+  for(int i = 0; i < (2*per+2); i++){
+    int brightness = 127.0*sin(freq*2*PI*i)+127;
+    analogWrite(led, brightness);
+    delay(5);
+  }
+  analogWrite(led, 127);
 }
