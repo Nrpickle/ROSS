@@ -4,7 +4,21 @@
 #include <SD.h>
 #include <avr/sleep.h>
 #include <Adafruit_NeoPixel.h> 
+#include <Timer.h>
 
+#define LEDRing 6
+Adafruit_NeoPixel ring = Adafruit_NeoPixel(12, LEDRing, NEO_GRB + NEO_KHZ800);
+uint32_t colorVal = ring.Color(0,0,0);
+int color = 0;
+int pattern = 0;
+int brightness = 0;
+Timer blinkTimer;
+Timer pulseTimer;
+bool on = false;
+int n = 0;
+bool increase = true;
+int pulseSpeed = 2; //Default pulse speed. Can be altered via serial.
+bool skip = false;
 SoftwareSerial mySerial(8, 7);
 Adafruit_GPS GPS(&mySerial);
 
@@ -73,7 +87,12 @@ void setup() {
   pinMode(LEDRing, OUTPUT);
   analogWrite(startLED, 127);
   analogWrite(stopLED, 127);
-
+  ring.begin();
+  ring.show();
+  Serial.begin(9600);
+  blinkTimer.every(500, LEDblink);
+  pulseTimer.every(2, LEDpulse);
+  pinMode(13,OUTPUT);
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
     Serial.println("Card init. failed!");
@@ -144,6 +163,12 @@ void useInterrupt(boolean v) {
 }
 
 void loop() {
+  if(pattern == 2)
+    blinkTimer.update();
+  else if(pattern == 3 && pulseSpeed == 2)
+    pulseTimer.update();
+  else if(pattern == 3 && pulseSpeed == 1)
+    pulseTimer.update();
   if(digitalRead(startPin) == HIGH)
     localStart();
   if(digitalRead(stopPin) == HIGH)
@@ -199,6 +224,7 @@ void localStop(){
 }
 
 void pulseLED(int led){
+  Serial.println("here");
   float per = 90;
   float freq = 1.0/per;
   for(int i = 0; i < (2*per+2); i++){
@@ -207,4 +233,99 @@ void pulseLED(int led){
     delay(5);
   }
   analogWrite(led, 127);
+}
+
+void serialEvent(){
+  int val = Serial.read();
+  if(val == 33)
+    color = 1; //red
+  else if(val == 34)
+    color = 2; //green
+  else if(val == 35)
+    color = 3; //blue
+  else if(val == 36)
+    color = 4; //yellow
+  else if(val == 41)
+    pattern = 1; //solid
+  else if(val == 42)
+    pattern = 2; //blink
+  else if(val == 43)
+    pattern = 3; //pulse
+  else if(val == 51)
+    brightness = 0;
+  else if(val == 52)
+    brightness = 1;
+  else if(val == 53)
+    brightness = 2;
+  else if(val == 61)
+    pulseSpeed = 1;
+  else if(val == 62)
+    pulseSpeed = 2;
+  
+  if(color == 1)
+    colorVal = ring.Color(brightness*255/2, 0, 0);
+  else if(color == 2)
+    colorVal = ring.Color(0, brightness*255/2, 0);
+  else if(color == 3)
+    colorVal = ring.Color(0, 0, brightness*255/2);
+  else if(color == 4)
+    colorVal = ring.Color(brightness*255/2, brightness*255/2, 0);
+  else
+    colorVal = ring.Color(0,0,0);
+  
+  if(pattern == 1){
+    solid(colorVal);
+  }
+}
+
+void solid(uint32_t color){
+  for(int i = 0; i < ring.numPixels(); i++)
+    ring.setPixelColor(i, color);
+  ring.show();
+}
+
+void LEDblink(){
+  if(on == false){
+    for(int i = 0; i < ring.numPixels(); i++)
+      ring.setPixelColor(i, colorVal);
+    ring.show();
+    on = true;
+  }
+  else if(on == true){
+    for(int i = 0; i < ring.numPixels(); i++)
+      ring.setPixelColor(i, 0, 0, 0);
+    ring.show();
+    on = false;
+  }
+}
+
+void LEDpulse(){
+  if(pulseSpeed == 2)
+    skip = false;
+  if(skip == true){
+    skip = false;
+    return;
+  }
+  else{
+    skip = true;
+    if(increase == true){
+      if(n < brightness*255/2)
+        n++;
+      else
+        increase = false;
+    }
+    if(increase == false){
+      if(n > 0)
+        n--;
+      else
+        increase = true;
+    }
+    uint32_t red = colorVal >> 16;
+    uint32_t green = colorVal & 65280; //000000001111111100000000
+    green = green >> 8;
+    uint32_t blue = colorVal & 255; //000000000000000011111111
+    uint32_t pulseColor = ring.Color(n*red/255, n*green/255, n*blue/255);
+    solid(pulseColor);
+  }
+  
 }
