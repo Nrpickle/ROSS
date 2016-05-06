@@ -29,8 +29,18 @@ unsigned long previousBlinkTime = 0;
 unsigned long currentBlinkTime = 0;
 unsigned long previousPulseTime = 0;
 unsigned long currentPulseTime = 0;
+unsigned long previousRedButtonTime = 0;
+unsigned long currentRedButtonTime = 0;
+unsigned long previousGreenButtonTime = 0;
+unsigned long currentGreenButtonTime = 0;
+#define buttonPulseTime 5
 #define blinkTime 500 //How frequently the ring will blink in milliseconds
 #define pulseTime 2
+int i = 0;
+float per = 90;
+float freq = 1.0/per;
+bool buttonPulseRed = false;
+bool buttonPulseGreen = false;
 bool on = false;
 int n = 0;
 bool increase = true;
@@ -166,6 +176,8 @@ void useInterrupt(boolean v) {
 void loop() {
   currentBlinkTime = millis();
   currentPulseTime = millis();
+  currentGreenButtonTime = millis();
+  currentRedButtonTime = millis();
   if(pattern == 2){
     if(currentBlinkTime - previousBlinkTime >= blinkTime){
       LEDblink();
@@ -178,10 +190,29 @@ void loop() {
       previousPulseTime = currentPulseTime;
     }
   }
-  if(digitalRead(startPin) == HIGH)
-    localStart();
-  if(digitalRead(stopPin) == HIGH)
-    localStop();
+  if(digitalRead(startPin) == HIGH){
+    Serial.write(10);
+    buttonPulseGreen = true;
+  }
+
+  if(buttonPulseGreen == true){
+    if(currentGreenButtonTime - previousGreenButtonTime >= buttonPulseTime){ 
+      pulseLED(startLED);
+      previousGreenButtonTime = currentGreenButtonTime;
+    }
+  }
+  
+  if(digitalRead(stopPin) == HIGH){
+    Serial.write(20);
+    buttonPulseRed = true;
+  }
+  
+  if(buttonPulseRed == true){
+    if(currentRedButtonTime - previousRedButtonTime >= buttonPulseTime){
+      pulseLED(stopLED);
+      previousRedButtonTime = currentRedButtonTime;
+    }
+  }
   if (! usingInterrupt) {
     // read data from the GPS in the 'main loop'
     char c = GPS.read();
@@ -222,25 +253,18 @@ void loop() {
   }
 }
 
-void localStart(){
-  Serial.write(10);
-  pulseLED(startLED);
-}
-
-void localStop(){
-  Serial.write(20);
-  pulseLED(stopLED);
-}
-
 void pulseLED(int led){
-  float per = 90;
-  float freq = 1.0/per;
-  for(int i = 0; i < (2*per+2); i++){
+  if(i < (2*per+2)){
     int brightness = 127.0*sin(freq*2*PI*i)+127;
     analogWrite(led, brightness);
-    delay(5);
+    i++;
   }
-  analogWrite(led, 127);
+  else{
+    analogWrite(led, 127);
+    i = 0;
+    buttonPulseGreen = false;
+    buttonPulseRed = false;
+  }
 }
 
 void serialEvent(){
