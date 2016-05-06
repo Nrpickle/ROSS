@@ -31,6 +31,7 @@ int main(void)
 	configureUSART();					//Set up for 57600 Baud
 	configureTimerCounter();
 	configureADCs();
+	configureRTC();
 
 	//PMIC.CTRL |= PMIC_LOLVLEN_bm;
 	
@@ -64,6 +65,10 @@ int main(void)
 		if(broadcastStatus){
 			broadcastStatus = 0;
 			
+			TCC4.CNT = 0;	//We want to ensure the counter is 0 so that we can 
+							//have a consistent report time. (We don't want to throw
+							//out the accuracy of the TC)
+			
 			//Calculated desired output values
 			double EBoxTemp = getEBoxTemperature();
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
@@ -71,6 +76,8 @@ int main(void)
 			
 			//Actually output the desired values
 			//Not the most elegant code in the world, but it works...
+			
+			/*
 			
 			//Send the battery voltage
 			SendFloatPC(electronicsBatteryVoltage);
@@ -87,6 +94,11 @@ int main(void)
 			//Send 5v_Comp Curr
 			SendFloatPC(zero);
 			//SendStringPC((char *)"|");
+			
+			*/
+			
+			SendStringPC("RTC Counter Value: ");
+			SendNumPC(RTC.CNT);
 			
 			SendStringPC((char *)"\n\r");
 	
@@ -201,6 +213,8 @@ void configureIO(void){
 	PORTD.DIRCLR = PIN1_bm;  //Voltage Sense - Electronics Battery
 	PORTD.DIRCLR = PIN2_bm;  //Voltage Sense - Rear Battery
 	
+	//Set the RSSI pin to be an input
+	PORTA.DIRCLR = PIN2_bm;
 	
 	//Initialize output values
 	STATUS_CLR();
@@ -248,6 +262,44 @@ ISR (TCC4_OVF_vect){
 	TCC4.INTFLAGS |= 0b1;  //Reset overflow interrupt
 	
 	broadcastStatus = 1;	
+}
+
+void configureRTC(){
+	//RTC.CTRL = RTC_CORREN_bm | RTC_PRESCALER_DIV2_gc;    
+	RTC.CTRL = RTC_CORREN_bm | RTC_PRESCALER_DIV1_gc;		//Enable the RTC correction process, and the RTC itself with no prescaler
+	RTC.INTCTRL = RTC_COMPINTLVL_LO_gc | RTC_OVFINTLVL_LO_gc;
+	
+    OSC.CTRL |= OSC_RC32KEN_bm;								//Enable the 32.768kHz internal oscillator
+	
+	_delay_us(400);											//Wait for the oscillator to stabalize.
+	
+	//OSC.CTRL = OSC_RC32KEN_bm;
+	CLK.RTCCTRL = CLK_RTCSRC_RCOSC_gc | CLK_RTCEN_bm;
+	
+	//Testing setup code
+	RTC.COMP = 16384; //~1 second? Assuming 32.768 KHz
+	RTC.PER = 0xFF00;  //No tengo nuguien idea
+	
+	//RTC.CNT = 0x07;
+	
+}
+
+ISR(RTC_OVF_vect){
+
+}
+
+ISR(RTC_COMP_vect){
+	if(toggle){
+		STATUS_CLR();
+		toggle = 0;
+	}
+	else{
+		STATUS_SET();
+		toggle = 1;
+	}
+	
+	RTC.CNT = 0;
+		
 }
 
 /* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */
@@ -301,9 +353,9 @@ double getEBoxTemperature(){
 	temperature = sum / avgVal;
 	
 	double temperatureVoltage = ADCCountToVoltage(temperature);  //((float) temperature/ 4096) * 2.5;
-	SendStringPC((char *)"[tmpVolt:");
-	SendFloatPC(temperatureVoltage);
-	SendStringPC((char *)"]");
+	//SendStringPC((char *)"[tmpVolt:");
+	//SendFloatPC(temperatureVoltage);
+	//SendStringPC((char *)"]");
 	
 	#ifdef TMP36
 		double temperatureFloat = 100.0 * temperatureVoltage - 50.0;
