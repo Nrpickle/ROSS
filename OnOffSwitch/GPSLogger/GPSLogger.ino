@@ -75,7 +75,11 @@ void error(uint8_t errno) {
 }
 
 void setup() {
+<<<<<<< HEAD
   Serial.begin(115200); //Increase to 115200 if echoing to serial monitor 
+=======
+  Serial.begin(9600); //Increase if echoing to serial monitor 
+>>>>>>> parent of beebb84... Make LED buttons pulse
   Serial.println("\r\nUltimate GPSlogger Shield");
   pinMode(ledPin, OUTPUT);
 
@@ -85,6 +89,7 @@ void setup() {
   pinMode(stopPin, INPUT_PULLUP);
   pinMode(startLED, OUTPUT);
   pinMode(LEDRing, OUTPUT);
+<<<<<<< HEAD
   analogWrite(startLED, 127);
   analogWrite(stopLED, 127);
   ring.begin();
@@ -93,6 +98,9 @@ void setup() {
   //blinkTimer.every(500, LEDblink);
   //pulseTimer.every(2, LEDpulse);
   pinMode(13,OUTPUT);
+=======
+
+>>>>>>> parent of beebb84... Make LED buttons pulse
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
     Serial.println("Card init. failed!");
@@ -163,6 +171,7 @@ void useInterrupt(boolean v) {
 }
 
 void loop() {
+<<<<<<< HEAD
   if(pattern == 2)
     blinkTimer.update();
 //  else if(pattern == 3 && pulseSpeed == 2)
@@ -170,8 +179,11 @@ void loop() {
 //  else if(pattern == 3 && pulseSpeed == 1)
 //    pulseTimer.update();
   if(digitalRead(startPin) == HIGH)
+=======
+  if(startPin == HIGH)
+>>>>>>> parent of beebb84... Make LED buttons pulse
     localStart();
-  if(digitalRead(stopPin) == HIGH)
+  if(stopPin == HIGH)
     localStop();
   if (! usingInterrupt) {
     // read data from the GPS in the 'main loop'
@@ -224,6 +236,7 @@ void localStop(){
 }
 
 void pulseLED(int led){
+<<<<<<< HEAD
   Serial.println("here");
   float per = 90;
   float freq = 1.0/per;
@@ -233,6 +246,12 @@ void pulseLED(int led){
     delay(5);
   }
   analogWrite(led, 127);
+=======
+  for(int i = 0; i < 100; i++)
+    analogWrite(led, i);
+  for(int i = 100; i > 0; i--)
+    analogWrite(led, i);
+>>>>>>> parent of beebb84... Make LED buttons pulse
 }
 
 void serialEvent(){
