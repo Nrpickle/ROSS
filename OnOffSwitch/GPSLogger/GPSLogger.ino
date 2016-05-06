@@ -13,7 +13,7 @@ int color = 0;
 int pattern = 0;
 int brightness = 0;
 Timer blinkTimer;
-Timer pulseTimer;
+//Timer pulseTimer;
 bool on = false;
 int n = 0;
 bool increase = true;
@@ -75,7 +75,7 @@ void error(uint8_t errno) {
 }
 
 void setup() {
-  Serial.begin(115200); //Increase if echoing to serial monitor 
+  Serial.begin(115200); //Increase to 115200 if echoing to serial monitor 
   Serial.println("\r\nUltimate GPSlogger Shield");
   pinMode(ledPin, OUTPUT);
 
@@ -90,8 +90,8 @@ void setup() {
   ring.begin();
   ring.show();
   Serial.begin(9600);
-  blinkTimer.every(500, LEDblink);
-  pulseTimer.every(2, LEDpulse);
+  //blinkTimer.every(500, LEDblink);
+  //pulseTimer.every(2, LEDpulse);
   pinMode(13,OUTPUT);
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
@@ -165,10 +165,10 @@ void useInterrupt(boolean v) {
 void loop() {
   if(pattern == 2)
     blinkTimer.update();
-  else if(pattern == 3 && pulseSpeed == 2)
-    pulseTimer.update();
-  else if(pattern == 3 && pulseSpeed == 1)
-    pulseTimer.update();
+//  else if(pattern == 3 && pulseSpeed == 2)
+//    pulseTimer.update();
+//  else if(pattern == 3 && pulseSpeed == 1)
+//    pulseTimer.update();
   if(digitalRead(startPin) == HIGH)
     localStart();
   if(digitalRead(stopPin) == HIGH)
