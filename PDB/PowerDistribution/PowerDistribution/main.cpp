@@ -48,7 +48,7 @@ int main(void)
 	configureRTC();
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
-	MED_LEVEL_INTERRUPTS_ENABLE();
+	//MED_LEVEL_INTERRUPTS_ENABLE();
 	sei();								//Enable global interrupts
 	
 	uint8_t receivedUSARTData;
@@ -80,8 +80,7 @@ int main(void)
 				REAR_RELAY_CLR();
 		}		
 				
-		//if (timingCounter++ == timingThreshold) {
-		if(broadcastStatus){
+		if(broadcastStatus){  //This variable becomes true every interval that the user wants info reported
 			broadcastStatus = 0;
 			
 			TCC4.CNT = 0;	//We want to ensure the counter is 0 so that we can 
@@ -93,10 +92,33 @@ int main(void)
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
 			double zero = 0.0;
 			
-			//Actually output the desired values
-			//Not the most elegant code in the world, but it works...
+			//Get RSSI from XTend
+			RSSI.measuring = 0;
+			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
+				_delay_us(50);
+			}while(READ_RSSI_PIN());
+			
+			do{  //Wait until we have a "High" signal on the RSSI (wait for this ____/----)
+				_delay_us(50);
+			}while(!READ_RSSI_PIN());
+			
+			RTC.CNT = 0;  //Start counting
+			
+			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
+				_delay_us(50);
+			}while(READ_RSSI_PIN());
+			
+			RSSI.countDifference = RTC.CNT;
+			
+			// DO MATH TO GET LENGTH OF PULSE
+			
+			RSSI.sampleCount++;
+			
 			
 			/*
+			
+			//Actually output the desired values
+			//Not the most elegant code in the world, but it works...
 			
 			//Send the battery voltage
 			SendFloatPC(electronicsBatteryVoltage);
@@ -238,9 +260,9 @@ void configureIO(void){
 	
 	//Setup the RSSI input
 	PORTA.DIRCLR = PIN2_bm;				//Set the RSSI pin to be an input
-	PORTA.INTCTRL = PMIC_MEDLVLEN_bm;	//Set PORTA's interrupt to be medium level
-	PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
-	PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
+	//PORTA.INTCTRL = PMIC_MEDLVLEN_bm;	//Set PORTA's interrupt to be medium level
+	//PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
+	//PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
 	
 	
 	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
