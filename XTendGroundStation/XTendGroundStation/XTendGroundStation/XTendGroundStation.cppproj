@@ -158,6 +158,15 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="avr_compiler.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="config.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="macros.h">
       <SubType>compile</SubType>
     </Compile>
@@ -165,6 +174,18 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usart_driver.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usart_driver.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usart_helper.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usart_helper.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

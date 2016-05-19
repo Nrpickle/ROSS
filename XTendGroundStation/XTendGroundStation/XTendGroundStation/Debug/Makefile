@@ -37,7 +37,10 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
-../main.cpp
+../config.cpp \
+../main.cpp \
+../usart_driver.c \
+../usart_helper.cpp
 
 
 PREPROCESSING_SRCS += 
@@ -47,16 +50,28 @@ ASM_SRCS +=
 
 
 OBJS +=  \
-main.o
+config.o \
+main.o \
+usart_driver.o \
+usart_helper.o
 
 OBJS_AS_ARGS +=  \
-main.o
+config.o \
+main.o \
+usart_driver.o \
+usart_helper.o
 
 C_DEPS +=  \
-main.d
+config.d \
+main.d \
+usart_driver.d \
+usart_helper.d
 
 C_DEPS_AS_ARGS +=  \
-main.d
+config.d \
+main.d \
+usart_driver.d \
+usart_helper.d
 
 OUTPUT_FILE_PATH +=XTendGroundStation.elf
 
@@ -74,6 +89,19 @@ LINKER_SCRIPT_DEP+=
 # AVR32/GNU C Compiler
 
 
+
+
+
+
+
+
+
+./%.o: .././%.c
+	@echo Building file: $<
+	@echo Invoking: AVR8/GNU C Compiler : 4.9.2
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAE_DFP\1.0.28\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega32e5 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAE_DFP\1.0.28\gcc\dev\atxmega32e5" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
 
 ./%.o: .././%.cpp
 	@echo Building file: $<
