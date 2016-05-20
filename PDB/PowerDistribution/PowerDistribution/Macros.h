@@ -3,8 +3,9 @@
 
 /*** "SYSTEM" Class MACROS ***/
 
-//Enable low-level interrupts
+//Interrupt enables
 #define LOW_LEVEL_INTERRUPTS_ENABLE() (PMIC.CTRL |= PMIC_LOLVLEN_bm)
+#define MED_LEVEL_INTERRUPTS_ENABLE() (PMIC.CTRL |= PMIC_MEDLVLEN_bm)
 
 
 /*** "USER" Class MACROS ***/
@@ -21,6 +22,8 @@
 
 #define CHECK_DIP_SW_2(void) (!(PORTC.IN & PIN2_bm)) //Returns true if bit 1 of the DIP Switch is "ON"
 #define CHECK_DIP_SW_1(void) (!(PORTC.IN & PIN3_bm)) //Returns true if bit 2 of the DIP Switch is "ON"
+
+#define READ_RSSI_PIN(void) (PORTA.IN & PIN2_bm)
 
 //Timer Counter Macros
 #define TC_1024_100MS  0x0C35

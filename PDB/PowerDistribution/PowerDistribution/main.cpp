@@ -20,9 +20,20 @@
 
 
 //Global Variables *gasp*
-int toggle = 0;
+volatile int toggle = 0;
 volatile uint64_t longCounter = 0;
 volatile uint8_t broadcastStatus = 0;
+
+struct RSSI_type {
+	//"User" class variables
+	uint8_t value;
+	
+	//"System" class variables
+	uint8_t measuring;
+	uint16_t timeDifference;
+} RSSI;
+
+enum measuring {MEASURING, NOT_MEASURING};
 
 int main(void)
 {
@@ -31,13 +42,19 @@ int main(void)
 	configureUSART();					//Set up for 57600 Baud
 	configureTimerCounter();
 	configureADCs();
+	configureRTC();
 
 	//PMIC.CTRL |= PMIC_LOLVLEN_bm;
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
+	MED_LEVEL_INTERRUPTS_ENABLE();
 	sei();								//Enable global interrupts
 	
 	uint8_t receivedUSARTData;
+	
+	RSSI.measuring = NOT_MEASURING;
+	RSSI.timeDifference = 0;
+	
 	
 	//Init string with basic documentation
 	SendStringPC((char *)"#[INIT ROSS PDB]\n\r");
@@ -45,6 +62,7 @@ int main(void)
 	SendStringPC((char *)FIRMWARE_VERSION_STR);
 	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr \n\r");
 	
+	ERROR_CLR();
 	
     while (1) 
     {
@@ -64,6 +82,10 @@ int main(void)
 		if(broadcastStatus){
 			broadcastStatus = 0;
 			
+			TCC4.CNT = 0;	//We want to ensure the counter is 0 so that we can 
+							//have a consistent report time. (We don't want to throw
+							//out the accuracy of the TC)
+			
 			//Calculated desired output values
 			double EBoxTemp = getEBoxTemperature();
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
@@ -71,6 +93,8 @@ int main(void)
 			
 			//Actually output the desired values
 			//Not the most elegant code in the world, but it works...
+			
+			/*
 			
 			//Send the battery voltage
 			SendFloatPC(electronicsBatteryVoltage);
@@ -87,6 +111,11 @@ int main(void)
 			//Send 5v_Comp Curr
 			SendFloatPC(zero);
 			//SendStringPC((char *)"|");
+			
+			*/
+			
+			SendStringPC("RTC Counter Value: ");
+			SendNumPC(RTC.CNT);
 			
 			SendStringPC((char *)"\n\r");
 	
@@ -177,7 +206,7 @@ void configureExternalOscillator(){
 	
 	
 }
- 
+
 void configureIO(void){
 	//Set STATUS and ERROR LEDs to be outputs
 	PORTC.DIRSET = PIN1_bm;
@@ -201,6 +230,14 @@ void configureIO(void){
 	PORTD.DIRCLR = PIN1_bm;  //Voltage Sense - Electronics Battery
 	PORTD.DIRCLR = PIN2_bm;  //Voltage Sense - Rear Battery
 	
+	//Setup the RSSI input
+	PORTA.DIRCLR = PIN2_bm;				//Set the RSSI pin to be an input
+	PORTA.INTCTRL = PMIC_MEDLVLEN_bm;	//Set PORTA's interrupt to be medium level
+	PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
+	PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
+	
+	
+	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
 	
 	//Initialize output values
 	STATUS_CLR();
@@ -209,6 +246,22 @@ void configureIO(void){
 	REAR_RELAY_CLR();
 		
 }
+
+//This function will be called on the edges of the RSSI signal
+ISR(PORTA_INT_vect){
+	ERROR_SET();
+	
+	PORTA.INTFLAGS = PIN2_bm;  //Reset the interrupt flag for this pin
+	
+	if(RSSI.measuring == NOT_MEASURING && READ_RSSI_PIN()){   //We detected one of these ____/???
+		RTC.CNT = 0;		//We want to start counting the counter
+	}
+	else if (RSSI.measuring == MEASURING && !READ_RSSI_PIN()){  //That means we are at this point ???\____
+		
+	}
+	
+}
+
 
 void configure32MhzInternalOsc(){
 	OSC_CTRL |= OSC_RC32MEN_bm; //Setup 32Mhz crystal
@@ -243,11 +296,45 @@ void configureTimerCounter(){
 //Handles compare vector for T/C 4
 ISR (TCC4_OVF_vect){
 	++longCounter;
-	STATUS_CLR();
 	
 	TCC4.INTFLAGS |= 0b1;  //Reset overflow interrupt
 	
-	broadcastStatus = 1;	
+	broadcastStatus = 1;
+}
+
+void configureRTC(){
+	RTC.CTRL = RTC_CORREN_bm | RTC_PRESCALER_DIV1_gc;		//Enable the RTC correction process, and the RTC itself with no prescaler
+	RTC.INTCTRL = RTC_COMPINTLVL_LO_gc | RTC_OVFINTLVL_LO_gc; //Enable the overflow and 
+	
+    OSC.CTRL |= OSC_RC32KEN_bm;								//Enable the 32.768kHz internal oscillator
+	
+	_delay_us(400);											//Wait for the oscillator to stabalize.
+	
+	CLK.RTCCTRL = CLK_RTCSRC_RCOSC32_gc;					//Set the RTC input as the 32.768kHz internal oscillator
+	CLK.RTCCTRL |= CLK_RTCEN_bm;							//Enable the clock input
+	
+	//Testing setup code
+	RTC.COMP = 16384; //~1 second? Assuming 32.768 KHz
+	RTC.PER = 0xFF00;  //No tengo nuguien idea
+
+}
+
+ISR(RTC_OVF_vect){
+
+}
+
+ISR(RTC_COMP_vect){
+	if(toggle){
+		STATUS_CLR();
+		toggle = 0;
+	}
+	else{
+		STATUS_SET();
+		toggle = 1;
+	}
+	
+	RTC.CNT = 0;
+	RTC.INTFLAGS = 0x02;
 }
 
 /* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */
@@ -301,9 +388,9 @@ double getEBoxTemperature(){
 	temperature = sum / avgVal;
 	
 	double temperatureVoltage = ADCCountToVoltage(temperature);  //((float) temperature/ 4096) * 2.5;
-	SendStringPC((char *)"[tmpVolt:");
-	SendFloatPC(temperatureVoltage);
-	SendStringPC((char *)"]");
+	//SendStringPC((char *)"[tmpVolt:");
+	//SendFloatPC(temperatureVoltage);
+	//SendStringPC((char *)"]");
 	
 	#ifdef TMP36
 		double temperatureFloat = 100.0 * temperatureVoltage - 50.0;

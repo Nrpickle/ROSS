@@ -18,6 +18,7 @@ void configureIO();
 void configureExternalOscillator();
 void configure32MhzInternalOsc();
 void configureTimerCounter();
+void configureRTC();
 void configureADCs();
 static uint8_t ReadCalibrationByte( uint8_t index );
 int16_t sampleTempSensorVoltage(void);
