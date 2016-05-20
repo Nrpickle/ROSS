@@ -132,7 +132,7 @@ void updateParameters(){
   halt = false;  
   upperByte = upperByte << 8;
   depth = upperByte + lowerByte;
-  depth = depth * 1000; //pings/meter ratio (current is place holder)
+  depth = depth * 3936; //pings/revolution
   speedOut = 90 + (speedOut*90/254);
   speedIn = 90 - (speedIn*90/254);
 }
@@ -140,12 +140,12 @@ void updateParameters(){
 void takeProfile(){
    if(depthReached == false){
      //Can't use switches with current version of Aux Board
-//    if(!digitalRead(down) == false){//Slowly let A-frame down from upright position
-//      ESC.write(110);
-//      returned = false;
-//    }
+    if(!digitalRead(down) == false){//Slowly let A-frame down from upright position
+      ESC.write(110);
+      returned = false;
+    }
 //Change following line to else if statement after switches are added back in
-    if(winchEncoder.read() < (depth - 40000)){ //Increase to full speed once A-fram is down
+    else if(winchEncoder.read() < (depth - 40000)){ //Increase to full speed once A-fram is down
       ESC.write(speedOut);
       returned = false;
     }
@@ -173,11 +173,11 @@ void takeProfile(){
     }
   }
   else if(depthReached == true && halt == false){
-//    if(!digitalRead(up) == true){ //Stop when A-frame is in full upright position
-//      ESC.write(90);
-//      returned = true;
-//    }
-    if(winchEncoder.read() > 40000){ //change back to else if
+    if(!digitalRead(up) == true){ //Stop when A-frame is in full upright position
+      ESC.write(90);
+      returned = true;
+    }
+    else if(winchEncoder.read() > 40000){ //change back to else if
       ESC.write(speedIn);
       returned = false;
     }
