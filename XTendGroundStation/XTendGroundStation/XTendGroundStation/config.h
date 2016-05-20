@@ -26,6 +26,7 @@ void configureUSART();
 #define TC_1024_1000MS 0x7A12
 
 //GLOBAL Variables *gasp*
-extern uint8_t broadcastStatus;
+extern volatile uint8_t broadcastStatus;
+extern volatile uint8_t globalToggle;
 
 #endif /* CONFIG_H_ */
