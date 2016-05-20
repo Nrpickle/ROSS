@@ -13,9 +13,9 @@
 #define remoteStopPin 6
 #define remoteStartLED 7
 #define remoteStopLED 8
-#define down 10
-#define up 11
-#define startTime 750 //How long remote start is held HIGH
+#define down 11
+#define up 14
+#define startTime 750 //How long remote start is held HIGH in milliseconds
 
 Servo ESC; //Create ESC object
 Encoder winchEncoder(3,2); //Create encoder object
@@ -39,6 +39,7 @@ bool motorRunning = false;
 bool depthReached = false;
 bool softStopped = false;
 bool halt = false;
+bool returned = true;
 
 void setup() {
   // put your setup code here, to run once:
@@ -95,7 +96,7 @@ void loop() {
         speedIn = 45;
         takeProfile();
       }
-      else if(header == 0xCC){
+      else if(header == 0xCC){ //STOP:Halt
         if(softStopped == false)
           softStopped = softStop();
         halt = true;
@@ -139,42 +140,71 @@ void updateParameters(){
 void takeProfile(){
    if(depthReached == false){
      //Can't use switches with current version of Aux Board
-//    if(!digitalRead(down) == false)//Slowly let A-frame down from upright position
+//    if(!digitalRead(down) == false){//Slowly let A-frame down from upright position
 //      ESC.write(110);
+//      returned = false;
+//    }
 //Change following line to else if statement after switches are added back in
-    if(winchEncoder.read() < (depth - 40000)) //Increase to full speed once A-fram is down
+    if(winchEncoder.read() < (depth - 40000)){ //Increase to full speed once A-fram is down
       ESC.write(speedOut);
-    else if(winchEncoder.read() < (depth - 30000)) //Reduce speed as sensor nears destination
+      returned = false;
+    }
+    else if(winchEncoder.read() < (depth - 30000)){ //Reduce speed as sensor nears destination
       ESC.write(min(160, speedOut));
-    else if(winchEncoder.read() < (depth - 20000))
+      returned = false;
+    }
+    else if(winchEncoder.read() < (depth - 20000)){
       ESC.write(min(145, speedOut));
-    else if(winchEncoder.read() < (depth - 10000))
+      returned = false;
+    }
+    else if(winchEncoder.read() < (depth - 10000)){
       ESC.write(min(130, speedOut));
-    else if((winchEncoder.read() < depth))
+      returned = false;
+    }
+    else if((winchEncoder.read() < depth)){
       ESC.write(min(115, speedOut));
+      returned = false;
+    }
     else if(winchEncoder.read()>= depth){
       ESC.write(90);
       depthReached = true;
+      returned = false;
       delay(500);//Delay half a second to reduce mechanical stress
     }
   }
   else if(depthReached == true && halt == false){
-//    if(!digitalRead(up) == true) //Stop when A-frame is in full upright position
+//    if(!digitalRead(up) == true){ //Stop when A-frame is in full upright position
 //      ESC.write(90);
-    if(winchEncoder.read() > 40000) //change back to else if
+//      returned = true;
+//    }
+    if(winchEncoder.read() > 40000){ //change back to else if
       ESC.write(speedIn);
-    else if(winchEncoder.read() > 30000)
+      returned = false;
+    }
+    else if(winchEncoder.read() > 30000){
       ESC.write(max(20, speedIn));
-    else if(winchEncoder.read() > 20000)
+      returned = false;
+    }
+    else if(winchEncoder.read() > 20000){
       ESC.write(max(35, speedIn));
-    else if(winchEncoder.read() > 10000)
+      returned = false;
+    }
+    else if(winchEncoder.read() > 10000){
       ESC.write(max(50, speedIn));
-    else if(winchEncoder.read() > 0)
+      returned = false;
+    }
+    else if(winchEncoder.read() > 0){
       ESC.write(max(65, speedIn));
-//    else if(!digitalRead(down) == false && digitalRead(up) == false) //Slow down when A-fram lifts up
-//      ESC.write(70);
-    else if(winchEncoder.read() <= 0) //Winch will still stop if switches fail
-      ESC.write(90);  
+      returned = false;
+    }
+    else if(!digitalRead(down) == false && digitalRead(up) == false){ //Slow down when A-fram lifts up
+      ESC.write(70);
+      returned = false;
+    }
+    else if(winchEncoder.read() <= 0){ //Winch will still stop if switches fail
+      ESC.write(90);
+      returned = true;
+  }  
   }
 }
 
@@ -228,12 +258,12 @@ void remoteStop(){
 }
 
 void sendStatus(){
-//  currentSpeed = ESC.read();
-//  
-//  Serial1.print("Speed: ");
-//  
-//  Serial1.print("RPM");
-//  Serial1.println(); //New line
-
-  Serial1.println("Test message");
+  if(returned == true){
+    Serial1.print("STATUS ");
+    Serial1.println('1'); //Ready
+  }
+  else if(returned == false){
+    Serial1.print("STATUS ");
+    Serial1.println('0'); //Bussy
+  }
 }
