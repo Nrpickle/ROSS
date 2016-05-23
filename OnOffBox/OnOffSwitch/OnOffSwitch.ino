@@ -89,7 +89,7 @@ void error(uint8_t errno) {
 }
 
 void setup() {
-  Serial.begin(115200); //Increase if echoing to serial monitor 
+  Serial.begin(9600); //Increase to 115200 baud rate if echoing to serial monitor 
   Serial.println("\r\nUltimate GPSlogger Shield");
   ring.begin();
   ring.show();
