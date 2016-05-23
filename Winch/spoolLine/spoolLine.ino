@@ -15,10 +15,6 @@ void setup() {
   delay(4000);
   ESC.write(90);
   delay(6000);
-  winchEncoder.write(0);
-  while(winchEncoder.read() < 90000)
-    {ESC.write(115);}
-  ESC.write(90);
 }
 
 void loop() {
