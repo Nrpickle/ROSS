@@ -67,10 +67,17 @@ void setup() {
   digitalWrite(remoteStartLED, LOW);
   digitalWrite(remoteStopLED, LOW);
   statusTimer.every(5000, sendStatus);
+  while(digitalRead(up) == true){
+    ESC.write(80);
+    //Serial.println(digitalRead(up));
+  }
+  ESC.write(90);
+  winchEncoder.write(0);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  digitalWrite(13, HIGH);
   statusTimer.update();
   switch(state){
     case checkBuffer:
