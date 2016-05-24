@@ -8,8 +8,8 @@
  * Author : Nick McComb | nickmccomb.net
  */ 
 
-#define FIRMWARE_VERSION_STR ".1"
-#define FIRMWARE_VERSION .1
+#define FIRMWARE_VERSION_STR "[PRODTEST].0"
+#define FIRMWARE_VERSION .0
 
 
 #include "main.h"
@@ -94,6 +94,17 @@ int main(void)
 			//Actually output the desired values
 			//Not the most elegant code in the world, but it works...
 			
+			if(toggle){
+				STATUS_SET();
+				toggle = 0;
+			}
+			else {
+				STATUS_CLR();
+				toggle = 1;
+			}
+			
+			SendStringPC("Hello, world! \n\r");
+			
 			/*
 			
 			//Send the battery voltage
@@ -113,11 +124,6 @@ int main(void)
 			//SendStringPC((char *)"|");
 			
 			*/
-			
-			SendStringPC("RTC Counter Value: ");
-			SendNumPC(RTC.CNT);
-			
-			SendStringPC((char *)"\n\r");
 	
 			//Check the updating speed setting
 			if(CHECK_DIP_SW_1()){
@@ -324,14 +330,6 @@ ISR(RTC_OVF_vect){
 }
 
 ISR(RTC_COMP_vect){
-	if(toggle){
-		STATUS_CLR();
-		toggle = 0;
-	}
-	else{
-		STATUS_SET();
-		toggle = 1;
-	}
 	
 	RTC.CNT = 0;
 	RTC.INTFLAGS = 0x02;
