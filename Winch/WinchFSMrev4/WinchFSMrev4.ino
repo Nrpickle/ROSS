@@ -13,8 +13,8 @@
 #define remoteStopPin 6
 #define remoteStartLED 7
 #define remoteStopLED 8
-#define down 11
-#define up 14
+#define down 11 //CHANGE TO REFLECT NEW AUX BOARD WIRING
+#define up 14//CHANGE TO REFLECT NEW AUX BOARD WIRING
 #define startTime 750 //How long remote start is held HIGH in milliseconds
 
 Servo ESC; //Create ESC object
@@ -45,16 +45,16 @@ void setup() {
   // put your setup code here, to run once:
   Serial1.begin(9600);
   pinMode(13, OUTPUT); //Remove for final revision
-  //digitalWrite(13, HIGH); //Remove after debugging
-  delay(5000); //Ensure the winch is powered on before calibration sequence begins //Increase for final revision
-  ESC.attach(9);//Begin calibration sequence
-  ESC.write(180);
-  delay(4000);
-  ESC.write(0);
-  delay(4000);
-  ESC.write(90);
-  delay(6000);
-  
+  while(!Serial1.available()); //Don't begin until start command is sent over serial
+  ESC.attach(9); //Connect ESC
+  if(Serial1.available() != '0'){ //If that start command is '0' skip calibration
+    ESC.write(180);
+    delay(4000);
+    ESC.write(0);
+    delay(4000);
+    ESC.write(90);
+    delay(6000);
+  }
   pinMode(remoteStartPin, OUTPUT);
   pinMode(remoteStopPin, OUTPUT);
   pinMode(remoteStartLED, OUTPUT);
@@ -66,11 +66,9 @@ void setup() {
   digitalWrite(remoteStopPin, HIGH);
   digitalWrite(remoteStartLED, LOW);
   digitalWrite(remoteStopLED, LOW);
-  statusTimer.every(5000, sendStatus);
-  while(digitalRead(up) == true){
+  statusTimer.every(1000, sendStatus);
+  while(digitalRead(up) == true)
     ESC.write(80);
-    //Serial.println(digitalRead(up));
-  }
   ESC.write(90);
   winchEncoder.write(0);
 }
