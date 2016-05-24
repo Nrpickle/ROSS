@@ -149,7 +149,7 @@ int main(void)
 				SendNumPC(RSSI.value);
 			}
 			else {
-				basicOutputCounter = RSSI.value / 10;
+				basicOutputCounter = (RSSI.value + 4) / 10;
 				SendStringPC((char *)"\rSignal Strength: ");
 				SendNumPC(RSSI.value);
 				SendStringPC((char *)"%");
@@ -158,10 +158,10 @@ int main(void)
 				for(int i = 0; i < basicOutputCounter; i++){
 					SendStringPC("#");
 				}
-				for(int i = 0; i < (11-basicOutputCounter); i++){
+				for(int i = 0; i < (10-basicOutputCounter); i++){
 					SendStringPC(" ");
 				}
-				SendStringPC((char *)"]");
+				SendStringPC((char *)"] ");
 				
 			}
 			
