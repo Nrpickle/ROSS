@@ -13,14 +13,6 @@
 #include "usartROSS.h"
 
 //Function Prototypes
-//'System' Class Functions
-void configureIO();
-void configureExternalOscillator();
-void configure32MhzInternalOsc();
-void configureTimerCounter();
-void configureRTC();
-void configureADCs();
-static uint8_t ReadCalibrationByte( uint8_t index );
 int16_t sampleTempSensorVoltage(void);
 int16_t sampleBatteryVoltage(void);
 double ADCCountToVoltage(uint16_t adcCount);
@@ -30,6 +22,18 @@ double getEBoxTemperature();
 double getElectronicsBatteryVoltage();
 double getSystemCurrent(uint8_t currentSelect);
 
+//EXTERNAL functions (not defined in MAIN)
+extern void configureIO();
+extern void configureExternalOscillator();
+extern void configure32MhzInternalOsc();
+extern void configureTimerCounter();
+extern void configureRTC();
+extern void configureADCs();
+extern uint8_t ReadCalibrationByte( uint8_t index );
+
+//Global Variables used
+extern volatile uint8_t broadcastStatus;
+extern volatile uint64_t longCounter;
 
 /*
 TEMP SENSOR SELECT
