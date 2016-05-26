@@ -25,6 +25,13 @@ void configureIO(){
 	//Set pullups on the switches
 	PORTC.PIN2CTRL = PORT_OPC_PULLUP_gc;
 	PORTC.PIN3CTRL = PORT_OPC_PULLUP_gc;
+	
+	//Set the RSSI pin as an input
+	PORTA.DIRCLR = PIN2_bm;
+	
+	//Setup the XTend Interface
+	PORTD.DIRCLR = PIN6_bm;  //Setup the RX as an input
+	//PORTD.DIRSET = PIN7_bm;  //Setup the TX as an output
 }
 
 
@@ -101,4 +108,40 @@ ISR (TCC4_OVF_vect){
 	TCC4.INTFLAGS |= 0b1;  //Reset overflow interrupt
 	
 	broadcastStatus = 1;
+}
+
+void configureRTC(){
+	RTC.CTRL = RTC_CORREN_bm | RTC_PRESCALER_DIV1_gc;		//Enable the RTC correction process, and the RTC itself with no prescaler
+	RTC.INTCTRL = RTC_COMPINTLVL_LO_gc | RTC_OVFINTLVL_LO_gc; //Enable the overflow and
+	
+	OSC.CTRL |= OSC_RC32KEN_bm;								//Enable the 32.768kHz internal oscillator
+	
+	_delay_us(400);											//Wait for the oscillator to stabalize.
+	
+	CLK.RTCCTRL = CLK_RTCSRC_RCOSC32_gc;					//Set the RTC input as the 32.768kHz internal oscillator
+	CLK.RTCCTRL |= CLK_RTCEN_bm;							//Enable the clock input
+	
+	//Testing setup code
+	RTC.COMP = 16384; //~1 second? Assuming 32.768 KHz
+	RTC.PER = 0xFF00;  //No tengo nuguien idea
+
+}
+
+ISR(RTC_OVF_vect){
+	
+}
+
+ISR(RTC_COMP_vect){
+	if(globalToggle){
+		STATUS_CLR();
+		globalToggle = 0;
+	}
+	else{
+		STATUS_SET();
+		globalToggle = 1;
+	}
+	
+	RTC.CNT = 0;
+	RTC.INTFLAGS = 0x02;
+
 }

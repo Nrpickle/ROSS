@@ -31,6 +31,9 @@ struct RSSI_type {
 	//"System" class variables
 	uint8_t measuring;
 	uint16_t timeDifference;
+	uint16_t countDifference;
+	uint16_t sampleCount;
+	uint16_t sampleCountTemp;
 } RSSI;
 
 enum measuring {MEASURING, NOT_MEASURING};
@@ -43,17 +46,16 @@ int main(void)
 	configureTimerCounter();
 	configureADCs();
 	configureRTC();
-
-	//PMIC.CTRL |= PMIC_LOLVLEN_bm;
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
-	MED_LEVEL_INTERRUPTS_ENABLE();
+	//MED_LEVEL_INTERRUPTS_ENABLE();
 	sei();								//Enable global interrupts
 	
 	uint8_t receivedUSARTData;
 	
 	RSSI.measuring = NOT_MEASURING;
 	RSSI.timeDifference = 0;
+	RSSI.sampleCount = 0;
 	
 	
 	//Init string with basic documentation
@@ -78,8 +80,7 @@ int main(void)
 				REAR_RELAY_CLR();
 		}		
 				
-		//if (timingCounter++ == timingThreshold) {
-		if(broadcastStatus){
+		if(broadcastStatus){  //This variable becomes true every interval that the user wants info reported
 			broadcastStatus = 0;
 			
 			TCC4.CNT = 0;	//We want to ensure the counter is 0 so that we can 
@@ -91,10 +92,33 @@ int main(void)
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
 			double zero = 0.0;
 			
-			//Actually output the desired values
-			//Not the most elegant code in the world, but it works...
+			//Get RSSI from XTend
+			RSSI.measuring = 0;
+			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
+				_delay_us(50);
+			}while(READ_RSSI_PIN());
+			
+			do{  //Wait until we have a "High" signal on the RSSI (wait for this ____/----)
+				_delay_us(50);
+			}while(!READ_RSSI_PIN());
+			
+			RTC.CNT = 0;  //Start counting
+			
+			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
+				_delay_us(50);
+			}while(READ_RSSI_PIN());
+			
+			RSSI.countDifference = RTC.CNT;
+			
+			// DO MATH TO GET LENGTH OF PULSE
+			
+			RSSI.sampleCount++;
+			
 			
 			/*
+			
+			//Actually output the desired values
+			//Not the most elegant code in the world, but it works...
 			
 			//Send the battery voltage
 			SendFloatPC(electronicsBatteryVoltage);
@@ -114,8 +138,12 @@ int main(void)
 			
 			*/
 			
-			SendStringPC("RTC Counter Value: ");
-			SendNumPC(RTC.CNT);
+			SendStringPC((char *)"RSSI Samples: ");
+			SendNumPC(RSSI.sampleCount);
+//			SendStringPC((char *)"RTC Counter Value: ");
+//			SendNumPC(RTC.CNT);
+			SendStringPC((char *)"\tRSSI Count Value: ");
+			SendNumPC(RSSI.countDifference);
 			
 			SendStringPC((char *)"\n\r");
 	
@@ -232,9 +260,9 @@ void configureIO(void){
 	
 	//Setup the RSSI input
 	PORTA.DIRCLR = PIN2_bm;				//Set the RSSI pin to be an input
-	PORTA.INTCTRL = PMIC_MEDLVLEN_bm;	//Set PORTA's interrupt to be medium level
-	PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
-	PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
+	//PORTA.INTCTRL = PMIC_MEDLVLEN_bm;	//Set PORTA's interrupt to be medium level
+	//PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
+	//PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
 	
 	
 	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
@@ -249,17 +277,27 @@ void configureIO(void){
 
 //This function will be called on the edges of the RSSI signal
 ISR(PORTA_INT_vect){
-	ERROR_SET();
+	cli();
 	
 	PORTA.INTFLAGS = PIN2_bm;  //Reset the interrupt flag for this pin
 	
-	if(RSSI.measuring == NOT_MEASURING && READ_RSSI_PIN()){   //We detected one of these ____/???
-		RTC.CNT = 0;		//We want to start counting the counter
+	if(RSSI.measuring == NOT_MEASURING && READ_RSSI_PIN()){   //We detected one of these ____/---
+		RTC.CNT = 0;		//We want to start counting the counter now
+		RSSI.measuring = MEASURING;
+
 	}
-	else if (RSSI.measuring == MEASURING && !READ_RSSI_PIN()){  //That means we are at this point ???\____
+	else if (RSSI.measuring == MEASURING && !READ_RSSI_PIN()){  //That means we are at this point ---\____
+		RSSI.countDifference = RTC.CNT;
 		
+		RSSI.sampleCount++;
+	}
+	else {
+		ERROR_SET();
 	}
 	
+	
+	//_delay_us(200);
+	sei();
 }
 
 
@@ -320,7 +358,7 @@ void configureRTC(){
 }
 
 ISR(RTC_OVF_vect){
-
+	
 }
 
 ISR(RTC_COMP_vect){
@@ -335,6 +373,8 @@ ISR(RTC_COMP_vect){
 	
 	RTC.CNT = 0;
 	RTC.INTFLAGS = 0x02;
+	
+	RSSI.countDifference = 0;
 }
 
 /* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */
