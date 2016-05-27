@@ -6,17 +6,21 @@
  *
  * Created: 12/22/2015
  * Author : Nick McComb | nickmccomb.net
+ 
+ TODOs
+ 
+ - Enable accurate ambient temperature sensor measurements
+ - Enable PWM passthrough / steering control
+ - Enable On/Off passthrough
+ - Enable all current sensing appropriately
+ - Enable current sense fault detection
+ 
  */ 
 
 #define FIRMWARE_VERSION_STR ".2"
 #define FIRMWARE_VERSION .2
 
-
 #include "main.h"
-#include "usartROSS.h"
-#include "avr_compiler.h"
-#include <avr/io.h>
-#include <stddef.h>
 
 volatile RSSI_type RSSI;
 
@@ -31,9 +35,11 @@ int main(void)
 	configureTimerCounter();
 	configureADCs();
 	configureRTC();
+	configureXCL();
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
 	//MED_LEVEL_INTERRUPTS_ENABLE();
+	HIGH_LEVEL_INTERRUPTS_ENABLE();
 	sei();								//Enable global interrupts
 	
 	uint8_t receivedUSARTData;
@@ -198,12 +204,34 @@ double getEBoxTemperature(){
 	temperature = sum / avgVal;
 	
 	double temperatureVoltage = ADCCountToVoltage(temperature);  //((float) temperature/ 4096) * 2.5;
-	//SendStringPC((char *)"[tmpVolt:");
-	//SendFloatPC(temperatureVoltage);
-	//SendStringPC((char *)"]");
+	
+	#ifdef OUTPUT_TEMP_SENSOR_VOLTAGE
+	SendStringPC((char *)"[tmpVolt:");
+	SendFloatPC(temperatureVoltage);
+	SendStringPC((char *)"]");
+	#endif
+	
+	double temperatureFloat;
 	
 	#ifdef TMP36
-		double temperatureFloat = 100.0 * temperatureVoltage - 50.0;
+	#ifdef TMP37
+		#error "Too many temperature sensors were selected"
+		temperatureVoltage = temperatureVoltage;
+	#endif
+	#endif
+	
+	#ifndef TMP36
+	#ifndef TMP37
+		#error "A temperature sensor was not selected!"
+		temperatureVoltage = temperatureVoltage;
+	#endif
+	#endif
+	
+	#ifdef TMP36
+		temperatureFloat = 100.0 * temperatureVoltage - 50.0;
+	#endif
+	#ifdef TMP37
+		temperatureFloat = 50.0 * temperatureVoltage;
 	#endif
 	
 	return temperatureFloat;

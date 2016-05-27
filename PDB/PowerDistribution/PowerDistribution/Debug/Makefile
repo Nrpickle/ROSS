@@ -39,7 +39,7 @@ SUBDIRS :=
 C_SRCS +=  \
 ../config.cpp \
 ../main.cpp \
-../usartROSS.cpp \
+../usart_helper.cpp \
 ../usart_driver.c
 
 
@@ -52,25 +52,25 @@ ASM_SRCS +=
 OBJS +=  \
 config.o \
 main.o \
-usartROSS.o \
+usart_helper.o \
 usart_driver.o
 
 OBJS_AS_ARGS +=  \
 config.o \
 main.o \
-usartROSS.o \
+usart_helper.o \
 usart_driver.o
 
 C_DEPS +=  \
 config.d \
 main.d \
-usartROSS.d \
+usart_helper.d \
 usart_driver.d
 
 C_DEPS_AS_ARGS +=  \
 config.d \
 main.d \
-usartROSS.d \
+usart_helper.d \
 usart_driver.d
 
 OUTPUT_FILE_PATH +=PowerDistribution.elf

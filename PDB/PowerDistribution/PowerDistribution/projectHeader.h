@@ -2,7 +2,7 @@
  * projectHeader.h
  *
  * Created: 12/30/2015 1:59:06 PM
- *  Author: Nick McComb
+ *  Author: Nick McComb | nickmccomb.net
  */ 
 
 
@@ -23,7 +23,14 @@
 
 #define COMP_USART USARTC0
 
-//Global Variables *gasp*
+/*
+TEMP SENSOR SELECT
+Select a temperature sensor that the board is using.
+The first sensor used was the 36, while the 37 has a smaller range but is more precise.
+*/
+//#define TMP36
+#define TMP37
+
 
 
 //Datatype Definitions
@@ -41,7 +48,6 @@ struct RSSI_type {
 
 
 //Enumerations
-
 enum measuring {MEASURING, NOT_MEASURING}; //Works with the RSSI interpret
 
 #endif /* PROJECTHEADER_H_ */

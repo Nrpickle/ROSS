@@ -107,6 +107,9 @@ void configureIO(void){
 	//PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
 	//PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
 	
+	//Setup the steering signal I/O
+	PORTD.OUTCLR = PIN4_bm;  //Set the STEER_SIG_3v3 pin as an input
+	PORTD.OUTSET = PIN5_bm;	 //Set the STEER_SIG_3v3_PROCESSED pin to be an output
 	
 	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
 	
@@ -143,7 +146,6 @@ ISR(PORTA_INT_vect){
 	sei();
 }
 
-
 void configure32MhzInternalOsc(){
 	OSC_CTRL |= OSC_RC32MEN_bm; //Setup 32Mhz crystal
 	
@@ -154,8 +156,14 @@ void configure32MhzInternalOsc(){
 }
 
 /*
-Function documentation:
-	
+TIMER COUNTERS
+
+The 32E5 has one TC4 and two TC5s.
+
+The TC4 is used for generation of accurate timing for reporting.
+
+TC5 is used entirely for remote steering control and passthrough.
+
 Assuming 1024 prescaler, the following values are known for 32Mhz
 	
 100mS = 0x0C35
@@ -164,14 +172,25 @@ Assuming 1024 prescaler, the following values are known for 32Mhz
 
 */
 void configureTimerCounter(){
-	//Set the timer to run (with a prescaler)	
+	//Configure the accurate reporting timer
 	TCC4.CTRLA = TC45_CLKSEL_DIV1024_gc;	//Configure a 1024 prescaler (we want very broad timing here, exact precision isn't required)
 	TCC4.PER = TC_1024_500MS;               //500mS delay
 											//Default delay value. Reference pre-calculated table up above for more information
-	
 	TCC4.CTRLB = TC45_WGMODE_NORMAL_gc;		//Configure the timer for Normal mode operation
-	
 	TCC4.INTCTRLA = TC45_OVFINTLVL_LO_gc;	//Set a low priority overflow interrupt
+
+	//Configure the PWM sense module
+	//Input capture described on (168)
+	
+	
+	//Configure the PWM generation module
+	TCD5.CTRLA = TC45_CLKSEL_DIV64_gc;		//Configure a 64 prescaler (will count ~10,000 in 20mS)
+	TCD5.CTRLB = TC45_WGMODE_NORMAL_gc;		//Normal operation
+	TCD5.PER   = 10000;						//We want to establish a 50Hz control loop here
+	TCD5.INTCTRLA = TC45_OVFINTLVL_HI_gc;	//Set a high priority overflow interrupt
+	
+	
+	
 }
 
 //Handles compare vector for T/C 4
@@ -182,6 +201,13 @@ ISR (TCC4_OVF_vect){
 	
 	broadcastStatus = 1;
 }
+
+/*
+
+REAL TIME CLOCK
+
+The real time clock is configured to handle XTend RSSI Interpret
+*/
 
 void configureRTC(){
 	RTC.CTRL = RTC_CORREN_bm | RTC_PRESCALER_DIV1_gc;		//Enable the RTC correction process, and the RTC itself with no prescaler
@@ -212,6 +238,9 @@ ISR(RTC_COMP_vect){
 	RSSI.countDifference = 0;
 }
 
+void configureXCL(){
+	//XCL.INTCTRL = XCL_TC16
+}
 
 /* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */
 uint8_t ReadCalibrationByte( uint8_t index ){

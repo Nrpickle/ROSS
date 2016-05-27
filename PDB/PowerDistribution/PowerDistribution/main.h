@@ -10,7 +10,6 @@
 #define MAIN_H_
 
 #include "projectHeader.h"
-#include "usartROSS.h"
 
 //Function Prototypes
 int16_t sampleTempSensorVoltage(void);
@@ -23,24 +22,30 @@ double getElectronicsBatteryVoltage();
 double getSystemCurrent(uint8_t currentSelect);
 
 //EXTERNAL functions (not defined in MAIN)
+
+//config
 extern void configureIO();
 extern void configureExternalOscillator();
 extern void configure32MhzInternalOsc();
 extern void configureTimerCounter();
 extern void configureRTC();
 extern void configureADCs();
+extern void configureXCL();
 extern uint8_t ReadCalibrationByte( uint8_t index );
+//usart
+extern void configureUSART();
+extern void SendStringPC(char *stufftosend);
+extern void SendNumPC(uint16_t numToSend);
+extern void SendFloatPC(double numToSend);
 
 //Global Variables used
 extern volatile uint8_t broadcastStatus;
 extern volatile uint64_t longCounter;
 
-/*
-TEMP SENSOR SELECT
-Select a temperature sensor that the board is using.
-The first sensor used was the 36, while the 37 has a smaller range but is more precise.
-*/
-#define TMP36
-//#define TMP37
+
+//DEBUGGING
+//The following are debugging options available
+
+//#define OUTPUT_TEMP_SENSOR_VOLTAGE
 
 #endif /* MAIN_H_ */

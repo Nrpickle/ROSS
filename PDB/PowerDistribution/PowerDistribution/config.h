@@ -18,6 +18,7 @@ void configure32MhzInternalOsc();
 void configureTimerCounter();
 void configureRTC();
 void configureADCs();
+void configureXCL();
 uint8_t ReadCalibrationByte( uint8_t index );
 
 volatile uint8_t broadcastStatus = 0;

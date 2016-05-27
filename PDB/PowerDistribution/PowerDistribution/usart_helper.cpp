@@ -5,7 +5,7 @@
  *  Author: Nick McComb [nickmccomb.net]
  */ 
 
-#include "usartROSS.h"
+#include "usart_helper.h"
 #include <stdio.h>
 
 //Sends a string to the computer

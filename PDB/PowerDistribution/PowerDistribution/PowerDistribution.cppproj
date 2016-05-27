@@ -203,10 +203,10 @@
     <Compile Include="projectHeader.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="usartROSS.cpp">
+    <Compile Include="usart_helper.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="usartROSS.h">
+    <Compile Include="usart_helper.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usart_driver.c">
