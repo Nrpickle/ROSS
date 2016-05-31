@@ -26,7 +26,7 @@ volatile RSSI_type RSSI;
 
 //Global Variables *gasp*
 volatile int toggle = 0;
-volatile int temp = 500;
+volatile int temp = 1000;
 
 int main(void)
 {
@@ -48,8 +48,7 @@ int main(void)
 	RSSI.measuring = NOT_MEASURING;
 	RSSI.timeDifference = 0;
 	RSSI.sampleCount = 0;
-	
-	
+
 	//Init string with basic documentation
 	SendStringPC((char *)"#[INIT ROSS PDB]\n\r");
 	SendStringPC((char *)"#Firmware version ");
@@ -90,11 +89,21 @@ int main(void)
 			double zero = 0.0;
 			
 			temp = temp + 50;
-			if (temp >= 1000)
-				temp = 500;
+			if (temp >= 2000)
+				temp = 1000;
 			
-			TCD5.CCA = temp;
+			TCD5.CCA = TC_PWM_GEN(temp);
+			SendNumPC(TC_PWM_GEN(temp));
+			SendStringPC((char *)"|");
 			
+			if(toggle){
+				toggle = 0;
+				STATUS_CLR();
+			}
+			else {
+				toggle = 1;
+				STATUS_SET();
+			}
 			
 			
 			/*

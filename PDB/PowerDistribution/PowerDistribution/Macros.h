@@ -41,8 +41,16 @@
 #define TC_1024_1000MS 0x7A12
 
 //PWM Generation Macros
-#define TC_PWM_1MS 500
+#define TC_PWM_1MS   500
 #define TC_PWM_1_1MS 550
 #define TC_PWM_1_2MS 600
 #define TC_PWM_1_3MS 650
-#define TC_PWM_2MS 1000
+#define TC_PWM_2MS   1000
+
+/*
+This macros takes an input of microseconds
+to output over PWM. It should be input into 
+the compare register of the PWM generator
+ex: TCD5.CCA = TC_PWM_GEN(temp)
+*/
+#define TC_PWM_GEN(x)  (x*.5)
