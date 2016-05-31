@@ -26,6 +26,7 @@ volatile RSSI_type RSSI;
 
 //Global Variables *gasp*
 volatile int toggle = 0;
+volatile int temp = 500;
 
 int main(void)
 {
@@ -60,7 +61,12 @@ int main(void)
     while (1) 
     {
 
-		_delay_ms(1);
+		//STEER_SIG_SET();
+		//_delay_us(1800);
+		//STEER_SIG_CLR();
+		//_delay_us(20000);
+
+		//_delay_ms(1);
 
 		//Check for commands from the computer
 		if(USART_IsRXComplete(&COMP_USART)){
@@ -82,6 +88,14 @@ int main(void)
 			double EBoxTemp = getEBoxTemperature();
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
 			double zero = 0.0;
+			
+			temp = temp + 50;
+			if (temp >= 1000)
+				temp = 500;
+			
+			TCD5.CCA = temp;
+			
+			
 			
 			/*
 			

@@ -108,8 +108,8 @@ void configureIO(void){
 	//PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
 	
 	//Setup the steering signal I/O
-	PORTD.OUTCLR = PIN4_bm;  //Set the STEER_SIG_3v3 pin as an input
-	PORTD.OUTSET = PIN5_bm;	 //Set the STEER_SIG_3v3_PROCESSED pin to be an output
+	PORTD.DIRCLR = PIN4_bm;  //Set the STEER_SIG_3v3 pin as an input
+	PORTD.DIRSET = PIN5_bm;	 //Set the STEER_SIG_3v3_PROCESSED pin to be an output
 	
 	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
 	
@@ -118,10 +118,12 @@ void configureIO(void){
 	ERROR_CLR();
 	
 	REAR_RELAY_CLR();
-		
+	
+	STEER_SIG_CLR();	
 }
 
-//This function will be called on the edges of the RSSI signal
+//This function will be called on the edges of the RSSI signal 
+//*CURRENTLY DISABLED*
 ISR(PORTA_INT_vect){
 	cli();
 	
@@ -186,11 +188,47 @@ void configureTimerCounter(){
 	//Configure the PWM generation module
 	TCD5.CTRLA = TC45_CLKSEL_DIV64_gc;		//Configure a 64 prescaler (will count ~10,000 in 20mS)
 	TCD5.CTRLB = TC45_WGMODE_NORMAL_gc;		//Normal operation
-	TCD5.PER   = 10000;						//We want to establish a 50Hz control loop here
+	TCD5.PER   = 10000;						//We want to establish a 50Hz control loop here (20ms period)
 	TCD5.INTCTRLA = TC45_OVFINTLVL_HI_gc;	//Set a high priority overflow interrupt
+	TCD5.INTCTRLB = TC45_CCAINTLVL_HI_gc;   //DISABLED
 	
+	TCD5.CCA = 950;
 	
+}
+
+
+/*
+PWM Generation
+______/---- ... ---\_____ ... ____/---- 
+      ^--  1-2ms --^    20ms  ----^
+*/
+
+/*
+Compare vector A for the PWM generation module
+This situation ------\______
+
+*/
+ISR (TCD5_CCA_vect){
+	STEER_SIG_CLR();
+	//STATUS_SET();
+}
+
+/*
+Overflow vector for the PWM generation module
+
+This situation: _____/-----
+
+*/
+
+extern int toggle;
+
+ISR (TCD5_OVF_vect){
+	STEER_SIG_SET();
 	
+	TCD5.INTFLAGS |= 0b1;
+	
+	//ERROR_SET();
+	TCD5.CNT = 0;
 }
 
 //Handles compare vector for T/C 4
@@ -240,6 +278,7 @@ ISR(RTC_COMP_vect){
 
 void configureXCL(){
 	//XCL.INTCTRL = XCL_TC16
+	
 }
 
 /* Read NVM signature. From http://www.avrfreaks.net/forum/xmega-production-signature-row */

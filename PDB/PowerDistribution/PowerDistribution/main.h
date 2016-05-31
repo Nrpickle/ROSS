@@ -31,9 +31,9 @@ extern void configureTimerCounter();
 extern void configureRTC();
 extern void configureADCs();
 extern void configureXCL();
+extern void configureUSART();
 extern uint8_t ReadCalibrationByte( uint8_t index );
 //usart
-extern void configureUSART();
 extern void SendStringPC(char *stufftosend);
 extern void SendNumPC(uint16_t numToSend);
 extern void SendFloatPC(double numToSend);

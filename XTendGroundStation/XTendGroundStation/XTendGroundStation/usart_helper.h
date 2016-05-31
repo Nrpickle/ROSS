@@ -11,7 +11,6 @@
 
 #include "main.h"
 
-
 void SendStringPC(char *stufftosend);
 void SendNumPC(uint16_t numToSend);
 void SendFloatPC(double numToSend);
