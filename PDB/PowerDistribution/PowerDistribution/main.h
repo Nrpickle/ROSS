@@ -41,6 +41,7 @@ extern void SendFloatPC(double numToSend);
 //Global Variables used
 extern volatile uint8_t broadcastStatus;
 extern volatile uint64_t longCounter;
+extern volatile uint64_t longTemp;
 
 
 //DEBUGGING

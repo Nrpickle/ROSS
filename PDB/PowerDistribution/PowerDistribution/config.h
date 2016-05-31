@@ -23,5 +23,7 @@ uint8_t ReadCalibrationByte( uint8_t index );
 
 volatile uint8_t broadcastStatus = 0;
 volatile uint64_t longCounter = 0;
+volatile uint8_t PWMMeasuringStatus = NOT_MEASURING;
+volatile uint64_t longTemp = 0;
 
 #endif /* CONFIG_H_ */

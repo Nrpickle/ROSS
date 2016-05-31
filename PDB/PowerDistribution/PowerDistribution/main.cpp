@@ -39,7 +39,7 @@ int main(void)
 	configureXCL();
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
-	//MED_LEVEL_INTERRUPTS_ENABLE();
+	MED_LEVEL_INTERRUPTS_ENABLE();
 	HIGH_LEVEL_INTERRUPTS_ENABLE();
 	sei();								//Enable global interrupts
 	
@@ -55,7 +55,6 @@ int main(void)
 	SendStringPC((char *)FIRMWARE_VERSION_STR);
 	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr \n\r");
 	
-	ERROR_SET();
 	
     while (1) 
     {
@@ -92,13 +91,9 @@ int main(void)
 			if (temp >= 2000)
 				temp = 1000;
 			
-			//TCD5.CCA = TC_PWM_GEN(temp);
 			TC_PWM_SET(temp);
-			//SendNumPC(TC_PWM_GEN(temp));
-			//SendStringPC((char *)"|");
 			
 			STATUS_TOGGLE();
-			ERROR_TOGGLE();
 			
 			/*
 			
@@ -148,6 +143,10 @@ int main(void)
 			//SendStringPC((char *)"|");
 			
 			
+			SendStringPC((char *)"[PWM Interpret: ");
+			SendNumPC(longTemp);
+			SendStringPC((char *)"] ");
+			
 			/*
 			
 			SendStringPC((char *)"RSSI Samples: ");
@@ -159,6 +158,7 @@ int main(void)
 			
 			*/
 			
+			//Newline
 			SendStringPC((char *)"\n\r");
 	
 			//Check the updating speed setting

@@ -47,7 +47,7 @@ void configureADCs(){
 	//
 	//ADCA.CTRLA |= ADC_CH8START_bm;
 	*/	
-}
+}	
 
 void configureExternalOscillator(){
 	int temp = 0;																			//Temporary variable for helping avoid 4 clock cycle limitation when updating secure registers
@@ -110,6 +110,11 @@ void configureIO(void){
 	//Setup the steering signal I/O
 	PORTD.DIRCLR = PIN4_bm;  //Set the STEER_SIG_3v3 pin as an input
 	PORTD.DIRSET = PIN5_bm;	 //Set the STEER_SIG_3v3_PROCESSED pin to be an output
+
+	//Setup steering control PWM interrupts
+	PORTD.INTCTRL  = PMIC_MEDLVLEN_bm;	//Set PORTC's interrupt to be medium level
+	PORTD.INTMASK  = PIN4_bm;			//Configure the PWM input pin as an interrupt
+	PORTD.PIN4CTRL = PORT_ISC_RISING_gc;  //Init the pin as a rising edge interrupt only
 	
 	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
 	
@@ -122,6 +127,51 @@ void configureIO(void){
 	STEER_SIG_CLR();	
 }
 
+/*
+
+On rising edge, start counter
+set overflow to be less than 20 milliseconds
+
+DELAY (200us?)
+
+Set interrupt mode to falling only
+
+Wait for falling edge
+
+if timer has overflown, then we missed the appropriate edge, throw out our data
+
+If timer is good, calculate PWM high time
+
+Store in global variable
+
+
+*/
+/*
+If measuring ______/----- just happened
+
+*/
+ISR(PORTD_INT_vect){
+	ERROR_TOGGLE();
+	PORTD.INTFLAGS = PIN4_bm;
+
+	
+	if(PWMMeasuringStatus == NOT_MEASURING){  //We encountered the first part of the wave
+		TCC5.CNT = 0;	//Start counting
+		PWMMeasuringStatus = MEASURING;
+		
+		_delay_us(25);  //Delay ~6-7 clock cycles
+		
+		PORTD.PIN4CTRL = PORT_ISC_FALLING_gc; //Set the interrupt to wait for a falling wave (end of signal)
+	}
+	else { //We finished encountering the wave (process the data)
+		longTemp = TCC5.CNT;
+		PWMMeasuringStatus = NOT_MEASURING;
+		
+		PORTD.PIN4CTRL = PORT_ISC_RISING_gc; 
+	}
+	
+}
+
 //This function will be called on the edges of the RSSI signal 
 //*CURRENTLY DISABLED*
 ISR(PORTA_INT_vect){
@@ -132,6 +182,7 @@ ISR(PORTA_INT_vect){
 	if(RSSI.measuring == NOT_MEASURING && READ_RSSI_PIN()){   //We detected one of these ____/---
 		RTC.CNT = 0;		//We want to start counting the counter now
 		RSSI.measuring = MEASURING;
+		
 
 	}
 	else if (RSSI.measuring == MEASURING && !READ_RSSI_PIN()){  //That means we are at this point ---\____
@@ -183,19 +234,28 @@ void configureTimerCounter(){
 
 	//Configure the PWM sense module
 	//Input capture described on (168)
+	TCC5.CTRLA = TC45_CLKSEL_DIV64_gc;		//Configure a 64 prescaler (will count ~10,000 in 20mS)
+	TCC5.CTRLB = TC45_WGMODE_NORMAL_gc;		//Normal operation
+	TCC5.PER   = 12000;						//This is set to be 20% longer than the 20mS cycle should be
 	
+	//Is the following necessary?
+	TCC5.INTCTRLA = TC45_OVFINTLVL_MED_gc;	//Set a medium priority overflow interrupt (we want the PWM generation to remain stable)
+											//as it will only take a few clock cycles compared to this interrupt
 	
 	//Configure the PWM generation module
 	TCD5.CTRLA = TC45_CLKSEL_DIV64_gc;		//Configure a 64 prescaler (will count ~10,000 in 20mS)
 	TCD5.CTRLB = TC45_WGMODE_NORMAL_gc;		//Normal operation
 	TCD5.PER   = 10000;						//We want to establish a 50Hz control loop here (20ms period)
 	TCD5.INTCTRLA = TC45_OVFINTLVL_HI_gc;	//Set a high priority overflow interrupt
-	TCD5.INTCTRLB = TC45_CCAINTLVL_HI_gc;   //DISABLED
+	TCD5.INTCTRLB = TC45_CCAINTLVL_HI_gc;   
 	
-	TCD5.CCA = 950;
-	
+	TCD5.CCA = 950;		//Initial value for compare
 }
 
+
+ISR (TCC5_OVF_vect){
+	TCC5.INTFLAGS |= 0b1;  //Reset interrupt flag
+}
 
 /*
 PWM Generation
@@ -220,14 +280,12 @@ This situation: _____/-----
 
 */
 
-extern int toggle;
 
 ISR (TCD5_OVF_vect){
 	STEER_SIG_SET();
 	
 	TCD5.INTFLAGS |= 0b1;
 	
-	//ERROR_SET();
 	TCD5.CNT = 0;
 }
 
@@ -241,12 +299,8 @@ ISR (TCC4_OVF_vect){
 }
 
 /*
-
-REAL TIME CLOCK
-
 The real time clock is configured to handle XTend RSSI Interpret
 */
-
 void configureRTC(){
 	RTC.CTRL = RTC_CORREN_bm | RTC_PRESCALER_DIV1_gc;		//Enable the RTC correction process, and the RTC itself with no prescaler
 	RTC.INTCTRL = RTC_COMPINTLVL_LO_gc | RTC_OVFINTLVL_LO_gc; //Enable the overflow and 

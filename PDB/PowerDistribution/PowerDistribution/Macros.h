@@ -44,9 +44,7 @@
 
 //PWM Generation Macros
 #define TC_PWM_1MS   500
-#define TC_PWM_1_1MS 550
-#define TC_PWM_1_2MS 600
-#define TC_PWM_1_3MS 650
+#define TC_PWM_1_5MS 750
 #define TC_PWM_2MS   1000
 
 /*
