@@ -55,7 +55,7 @@ int main(void)
 	SendStringPC((char *)FIRMWARE_VERSION_STR);
 	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr \n\r");
 	
-	ERROR_CLR();
+	ERROR_SET();
 	
     while (1) 
     {
@@ -75,7 +75,7 @@ int main(void)
 			else if(receivedUSARTData == 'n')
 				REAR_RELAY_CLR();
 		}		
-				
+		
 		if(broadcastStatus){  //This variable becomes true every interval that the user wants info reported
 			broadcastStatus = 0;
 			
@@ -92,19 +92,13 @@ int main(void)
 			if (temp >= 2000)
 				temp = 1000;
 			
-			TCD5.CCA = TC_PWM_GEN(temp);
-			SendNumPC(TC_PWM_GEN(temp));
-			SendStringPC((char *)"|");
+			//TCD5.CCA = TC_PWM_GEN(temp);
+			TC_PWM_SET(temp);
+			//SendNumPC(TC_PWM_GEN(temp));
+			//SendStringPC((char *)"|");
 			
-			if(toggle){
-				toggle = 0;
-				STATUS_CLR();
-			}
-			else {
-				toggle = 1;
-				STATUS_SET();
-			}
-			
+			STATUS_TOGGLE();
+			ERROR_TOGGLE();
 			
 			/*
 			
