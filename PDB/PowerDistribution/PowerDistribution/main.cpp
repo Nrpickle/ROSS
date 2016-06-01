@@ -88,11 +88,11 @@ int main(void)
 		if(USART_IsRXComplete(&ONOFF_USART)){
 			receivedUSARTData = USART_GetChar(&ONOFF_USART);
 			//CHECK FOR IF START OR STOP COMMAND
-			if(receivedUSARTData == '+'){  //Remote start requested
+			if(receivedUSARTData == 10){  //Remote start requested
 				remoteInput = REMOTE_START_CHECK;
 				remoteOutputCountdown = STATIC_STATUS_OUTPUT_COUNT;
 			}	
-			else if(receivedUSARTData == '-'){  //Remote stop requested
+			else if(receivedUSARTData == 20){  //Remote stop requested
 				remoteInput = REMOTE_STOP_CHECK;
 				remoteOutputCountdown = STATIC_STATUS_OUTPUT_COUNT;
 			}

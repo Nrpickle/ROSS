@@ -53,7 +53,9 @@ extern volatile uint16_t steeringPWMPeriod;
 
 //Main program defines
 #define RSSI_MAX_COUNT 273   //Calculated to have a max of 272.629 (32.768*.00832)
-#define STATIC_STATUS_OUTPUT_COUNT 5
+#define STATIC_STATUS_OUTPUT_COUNT 5	//Used to determine how many times thins like "remote output"
+										//are outputted before the information "expires"
+
 
 //DEBUGGING
 //The following are debugging options available
