@@ -52,3 +52,7 @@ Temporary Items
 *.o
 
 # Harklastion!
+*.map
+*.lss
+PDB/PowerDistribution/PowerDistribution/Debug/PowerDistribution.hex
+*.elf

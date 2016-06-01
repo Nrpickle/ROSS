@@ -56,7 +56,7 @@ void configureUSART(void){
 	USART_Tx_Enable(&COMP_USART);
 	
 	//ENABLE ON/OFF SWITCH USART
-	/*
+	
 	//Set TX (pin7) to be output
 	PORTD.DIRSET = PIN7_bm;
 	//Set RX (pin6) to be input
@@ -73,5 +73,5 @@ void configureUSART(void){
 	// Enable both RX and TX.
 	USART_Rx_Enable(&ONOFF_USART);
 	USART_Tx_Enable(&ONOFF_USART);
-	*/
+	
 }
