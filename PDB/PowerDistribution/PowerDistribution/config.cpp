@@ -90,7 +90,7 @@ void configureIO(void){
 	PORTC.DIRCLR = PIN2_bm;
 	PORTC.DIRCLR = PIN3_bm;
 	
-	//Set pullups on the switches
+	//Set pullups on the setting switches
 	PORTC.PIN2CTRL = PORT_OPC_PULLUP_gc;
 	PORTC.PIN3CTRL = PORT_OPC_PULLUP_gc;
 	
@@ -103,9 +103,6 @@ void configureIO(void){
 	
 	//Setup the RSSI input
 	PORTA.DIRCLR = PIN2_bm;				//Set the RSSI pin to be an input
-	//PORTA.INTCTRL = PMIC_MEDLVLEN_bm;	//Set PORTA's interrupt to be medium level
-	//PORTA.INTMASK = PIN2_bm;			//Configure the RSSI pin to be an interrupt
-	//PORTA.PIN2CTRL |=  PORT_ISC_BOTHEDGES_gc;	//Configure the interrupt to trigger on both edges
 	
 	//Setup the steering signal I/O
 	PORTD.DIRCLR = PIN4_bm;  //Set the STEER_SIG_3v3 pin as an input
@@ -115,8 +112,7 @@ void configureIO(void){
 	PORTD.INTCTRL  = PMIC_MEDLVLEN_bm;	//Set PORTC's interrupt to be medium level
 	PORTD.INTMASK  = PIN4_bm;			//Configure the PWM input pin as an interrupt
 	PORTD.PIN4CTRL = PORT_ISC_RISING_gc;  //Init the pin as a rising edge interrupt only
-	
-	//DONT FORGET TO CLEAR THE FLAG IN INTFLAGS	
+
 	
 	//Initialize output values
 	STATUS_CLR();

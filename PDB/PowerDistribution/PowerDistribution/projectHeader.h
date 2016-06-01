@@ -22,6 +22,7 @@
 #include <stddef.h>
 
 #define COMP_USART USARTC0
+#define ONOFF_USART USARTD0
 
 /*
 TEMP SENSOR SELECT

@@ -36,6 +36,8 @@ void SendFloatPC(double numToSend){
 }
 
 void configureUSART(void){
+	//ENABLE COMUPTER USART
+	
 	//Set TX (pin7) to be output
 	PORTC.DIRSET = PIN7_bm;
 	//Set RX (pin6) to be input
@@ -52,4 +54,24 @@ void configureUSART(void){
 	// Enable both RX and TX.
 	USART_Rx_Enable(&COMP_USART);
 	USART_Tx_Enable(&COMP_USART);
+	
+	//ENABLE ON/OFF SWITCH USART
+	/*
+	//Set TX (pin7) to be output
+	PORTD.DIRSET = PIN7_bm;
+	//Set RX (pin6) to be input
+	PORTD.DIRCLR = PIN6_bm;
+	
+	//Enable alternate pin location for USART0 in PORTC
+	PORTD.REMAP |= (1 << 4);
+	
+	USART_Format_Set(&ONOFF_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+	
+	//Enable a 57600 baudrate
+	USART_Baudrate_Set(&ONOFF_USART, 34, 0);
+	
+	// Enable both RX and TX.
+	USART_Rx_Enable(&ONOFF_USART);
+	USART_Tx_Enable(&ONOFF_USART);
+	*/
 }
