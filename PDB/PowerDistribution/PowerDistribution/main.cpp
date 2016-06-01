@@ -10,11 +10,13 @@
  TODOs
  
  - Enable accurate ambient temperature sensor measurements
- - Enable PWM passthrough / steering control
+ - Enable PWM Override
  - Enable On/Off passthrough
  - Enable all current sensing appropriately
  - Enable current sense fault detection
- 
+
+ COMPLETED
+ - Enable PWM passthrough / steering control
  */ 
 
 #define FIRMWARE_VERSION_STR ".2"
@@ -27,6 +29,7 @@ volatile RSSI_type RSSI;
 //Global Variables *gasp*
 volatile int toggle = 0;
 volatile int temp = 1000;
+uint8_t remoteInput = 0;
 
 int main(void)
 {
@@ -53,7 +56,7 @@ int main(void)
 	SendStringPC((char *)"#[INIT ROSS PDB]\n\r");
 	SendStringPC((char *)"#Firmware version ");
 	SendStringPC((char *)FIRMWARE_VERSION_STR);
-	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr \n\r");
+	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | XTend RSSI | \"Remote Input\" | \n\r");
 	
 	
     while (1) 
@@ -85,84 +88,38 @@ int main(void)
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
 			double zero = 0.0;
 			
-			STATUS_TOGGLE();
-			
-			
-			RTC.CNT = 0;
-			
-			//Get RSSI from XTend
-			RSSI.measuring = 0;
-			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
-				_delay_us(50);
-				
-				if(RTC.CNT > 250)
-					break;
-					
-			}while(READ_RSSI_PIN());
-			
-			do{  //Wait until we have a "High" signal on the RSSI (wait for this ____/----)
-				_delay_us(50);
-				
-				if(RTC.CNT > 250)
-					break;
-			}while(!READ_RSSI_PIN());
-			
-			RTC.CNT = 0;  //Start counting
-			
-			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
-				_delay_us(50);
-				
-				if(RTC.CNT > 250)
-					break;
-			}while(READ_RSSI_PIN());
-			
-			RSSI.countDifference = RTC.CNT;
-			
-			// DO MATH TO GET LENGTH OF PULSE
-			
-			RSSI.sampleCount++;
-			
-			
-			
-			
+			getXTendRSSI();	//This is better here than in an interrupt because the frequency
+							//of the interpreted PWM signal is so high, there's no reason
+							//to sample it continuously. Also, on the same side of the coin,
+							//it is quick to sample.
 			
 			//Actually output the desired values
 			//Not the most elegant code in the world, but it works...
 			
-			//Send the battery voltage
-			SendFloatPC(electronicsBatteryVoltage);
+			SendFloatPC(electronicsBatteryVoltage);	//Send the battery voltage
 			SendStringPC((char *)"|");
-			//Send the rear battery voltage
-			SendFloatPC(zero);
+			SendFloatPC(zero);		//Send the rear battery voltage
 			SendStringPC((char *)"|");
-			//Send the EBox Temperature
-			SendFloatPC(EBoxTemp);
+			SendFloatPC(EBoxTemp);	//Send the EBox Temperature
 			SendStringPC((char *)"|");
-			//Send 5v_SYS Curr
-			SendFloatPC(zero);
+			SendFloatPC(zero);		//Send 5v_SYS Curr
 			SendStringPC((char *)"|");
-			//Send 5v_Comp Curr
-			SendFloatPC(zero);
+			SendFloatPC(zero);		//Send 5v_SYS Curr
+			SendStringPC((char *)"|");
+			SendNumPC(RSSI.value);
+			if(RSSI.value == 0)
+				SendNumPC(zero);
+			SendStringPC((char *)"|");
+			SendNumPC(remoteInput);
 			//SendStringPC((char *)"|");
 			
-			
-			//SendStringPC((char *)"[PWM Interpret: ");
-			//SendNumPC(steeringPWMPeriod);
-			//SendStringPC((char *)"] ");
-			
-			
-			
-			SendStringPC((char *)"RSSI Samples: ");
-			SendNumPC(RSSI.sampleCount);
-//			SendStringPC((char *)"RTC Counter Value: ");
-//			SendNumPC(RTC.CNT);
-			SendStringPC((char *)"\tRSSI Count Value: ");
-			SendNumPC(RSSI.countDifference);
+			debuggingOutput();
 			
 			//Newline
 			SendStringPC((char *)"\n\r");
 	
 			//Check the updating speed setting
+			//The speed shouldn't be set lower than maybe 75mS due to RSSI processing time
 			if(CHECK_DIP_SW_1()){
 				TCC4.PER = TC_1024_100MS;  //100mS delay
 			}
@@ -173,6 +130,44 @@ int main(void)
     }
 }
 
+uint16_t inline getXTendRSSI(){
+	RTC.CNT = 0;
+				
+	//Get RSSI from XTend
+	RSSI.measuring = 0;
+	do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
+		_delay_us(50);
+					
+		if(RTC.CNT > RSSI_MAX_COUNT)
+		break;
+					
+	}while(READ_RSSI_PIN());
+				
+	do{  //Wait until we have a "High" signal on the RSSI (wait for this ____/----)
+		_delay_us(50);
+					
+		if(RTC.CNT > RSSI_MAX_COUNT)
+		break;
+	}while(!READ_RSSI_PIN());
+				
+	RTC.CNT = 0;  //Start counting
+				
+	do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
+		_delay_us(50);
+					
+		if(RTC.CNT > RSSI_MAX_COUNT)
+		break;
+	}while(READ_RSSI_PIN());
+				
+	RSSI.countDifference = RTC.CNT;
+	
+	RSSI.value = (100 * RSSI.countDifference) / RSSI_MAX_COUNT;
+				
+	RSSI.sampleCount++;
+	
+	return RSSI.countDifference;
+}
+
 //Secret sauce
 double ADCCountToVoltage(uint16_t adcCount){
   
@@ -181,9 +176,6 @@ double ADCCountToVoltage(uint16_t adcCount){
 
 	
 }
-
-
-
 
 int16_t sampleTempSensorVoltage(void){
 	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN8_gc | ADC_CH_MUXNEGL_PIN1_gc);//ADC_CH_MUXNEG0_bm);
@@ -275,3 +267,20 @@ double getSystemCurrent(uint8_t currentSelect){
 	return 7.7;
 }
 
+void inline debuggingOutput(){
+
+	#ifdef PWM_DEBUGGING_OUTPUT	
+		SendStringPC((char *)"\t[PWM Interpret: ");
+		SendNumPC(steeringPWMPeriod);
+		SendStringPC((char *)"] ");
+	#endif
+	
+	#ifdef RSSI_DEBUGGING_OUTPUT
+		SendStringPC((char *)"\tRSSI Samples: ");
+		SendNumPC(RSSI.sampleCount);
+		//			SendStringPC((char *)"RTC Counter Value: ");
+		//			SendNumPC(RTC.CNT);
+		SendStringPC((char *)"\tRSSI Count Value: ");
+		SendNumPC(RSSI.countDifference);
+	#endif
+}

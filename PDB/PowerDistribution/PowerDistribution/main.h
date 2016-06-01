@@ -20,6 +20,10 @@ double ADCCountToVoltage(uint16_t adcCount);
 double getEBoxTemperature();
 double getElectronicsBatteryVoltage();
 double getSystemCurrent(uint8_t currentSelect);
+uint16_t inline getXTendRSSI();
+
+//'System' Class Functions
+void inline debuggingOutput();
 
 //EXTERNAL functions (not defined in MAIN)
 
@@ -45,9 +49,14 @@ extern volatile uint64_t longTemp;
 extern volatile uint16_t steeringPWMPeriod;
 
 
+//Main program defines
+#define RSSI_MAX_COUNT 273   //Calculated to have a max of 272.629 (32.768*.00832)
+
 //DEBUGGING
 //The following are debugging options available
 
+//#define PWM_DEBUGGING_OUTPUT
+//#define RSSI_DEBUGGING_OUTPUT
 //#define OUTPUT_TEMP_SENSOR_VOLTAGE
 
 #endif /* MAIN_H_ */
