@@ -73,6 +73,10 @@ int main(void)
 				REAR_RELAY_CLR();
 		}		
 		
+		if(USART_IsRXComplete(&ONOFF_USART)){
+			
+		}
+		
 		//TODO: if(pixhawkControl)
 		TC_PWM_SET(steeringPWMPeriod);	//Process the artificial PWM output
 		

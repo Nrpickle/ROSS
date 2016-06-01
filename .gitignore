@@ -56,3 +56,4 @@ Temporary Items
 *.lss
 PDB/PowerDistribution/PowerDistribution/Debug/PowerDistribution.hex
 *.elf
+*.map
