@@ -70,7 +70,8 @@ int main(void)
 				REAR_RELAY_CLR();
 		}		
 		
-		TC_PWM_SET(steeringPWMPeriod);
+		//TODO: if(pixhawkControl)
+		TC_PWM_SET(steeringPWMPeriod);	//Process the artificial PWM output
 		
 		if(broadcastStatus){  //This variable becomes true every interval that the user wants info reported
 			broadcastStatus = 0;
@@ -86,22 +87,33 @@ int main(void)
 			
 			STATUS_TOGGLE();
 			
-			/*
+			
+			RTC.CNT = 0;
 			
 			//Get RSSI from XTend
 			RSSI.measuring = 0;
 			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
 				_delay_us(50);
+				
+				if(RTC.CNT > 250)
+					break;
+					
 			}while(READ_RSSI_PIN());
 			
 			do{  //Wait until we have a "High" signal on the RSSI (wait for this ____/----)
 				_delay_us(50);
+				
+				if(RTC.CNT > 250)
+					break;
 			}while(!READ_RSSI_PIN());
 			
 			RTC.CNT = 0;  //Start counting
 			
 			do{   //Wait until we have a "Low" signal on the RSSI (wait for this ----\_____)
 				_delay_us(50);
+				
+				if(RTC.CNT > 250)
+					break;
 			}while(READ_RSSI_PIN());
 			
 			RSSI.countDifference = RTC.CNT;
@@ -110,7 +122,7 @@ int main(void)
 			
 			RSSI.sampleCount++;
 			
-			*/
+			
 			
 			
 			
@@ -134,11 +146,11 @@ int main(void)
 			//SendStringPC((char *)"|");
 			
 			
-			SendStringPC((char *)"[PWM Interpret: ");
-			SendNumPC(steeringPWMPeriod);
-			SendStringPC((char *)"] ");
+			//SendStringPC((char *)"[PWM Interpret: ");
+			//SendNumPC(steeringPWMPeriod);
+			//SendStringPC((char *)"] ");
 			
-			/*
+			
 			
 			SendStringPC((char *)"RSSI Samples: ");
 			SendNumPC(RSSI.sampleCount);
@@ -146,8 +158,6 @@ int main(void)
 //			SendNumPC(RTC.CNT);
 			SendStringPC((char *)"\tRSSI Count Value: ");
 			SendNumPC(RSSI.countDifference);
-			
-			*/
 			
 			//Newline
 			SendStringPC((char *)"\n\r");

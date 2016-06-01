@@ -142,7 +142,6 @@ Store in global variable
 
 */
 ISR(PORTD_INT_vect){
-	ERROR_TOGGLE();
 	PORTD.INTFLAGS = PIN4_bm;
 
 	
