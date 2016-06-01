@@ -59,12 +59,7 @@ int main(void)
     while (1) 
     {
 
-		//STEER_SIG_SET();
-		//_delay_us(1800);
-		//STEER_SIG_CLR();
-		//_delay_us(20000);
-
-		//_delay_ms(1);
+		_delay_ms(1);
 
 		//Check for commands from the computer
 		if(USART_IsRXComplete(&COMP_USART)){
@@ -74,6 +69,8 @@ int main(void)
 			else if(receivedUSARTData == 'n')
 				REAR_RELAY_CLR();
 		}		
+		
+		TC_PWM_SET(steeringPWMPeriod);
 		
 		if(broadcastStatus){  //This variable becomes true every interval that the user wants info reported
 			broadcastStatus = 0;
@@ -86,12 +83,6 @@ int main(void)
 			double EBoxTemp = getEBoxTemperature();
 			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
 			double zero = 0.0;
-			
-			temp = temp + 50;
-			if (temp >= 2000)
-				temp = 1000;
-			
-			TC_PWM_SET(temp);
 			
 			STATUS_TOGGLE();
 			
@@ -144,7 +135,7 @@ int main(void)
 			
 			
 			SendStringPC((char *)"[PWM Interpret: ");
-			SendNumPC(longTemp);
+			SendNumPC(steeringPWMPeriod);
 			SendStringPC((char *)"] ");
 			
 			/*

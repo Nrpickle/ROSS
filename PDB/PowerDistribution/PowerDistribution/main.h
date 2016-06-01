@@ -42,6 +42,7 @@ extern void SendFloatPC(double numToSend);
 extern volatile uint8_t broadcastStatus;
 extern volatile uint64_t longCounter;
 extern volatile uint64_t longTemp;
+extern volatile uint16_t steeringPWMPeriod;
 
 
 //DEBUGGING

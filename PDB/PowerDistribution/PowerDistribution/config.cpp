@@ -129,25 +129,16 @@ void configureIO(void){
 
 /*
 
+PWM Interpret "Pseudocode"
+
 On rising edge, start counter
-set overflow to be less than 20 milliseconds
-
-DELAY (200us?)
-
+Set overflow to be 24 milliseconds (see TCC5 OVF vector)
+DELAY (25us?)
 Set interrupt mode to falling only
-
 Wait for falling edge
-
 if timer has overflown, then we missed the appropriate edge, throw out our data
-
 If timer is good, calculate PWM high time
-
 Store in global variable
-
-
-*/
-/*
-If measuring ______/----- just happened
 
 */
 ISR(PORTD_INT_vect){
@@ -164,7 +155,7 @@ ISR(PORTD_INT_vect){
 		PORTD.PIN4CTRL = PORT_ISC_FALLING_gc; //Set the interrupt to wait for a falling wave (end of signal)
 	}
 	else { //We finished encountering the wave (process the data)
-		longTemp = TCC5.CNT;
+		steeringPWMPeriod = TCC5.CNT * 2;
 		PWMMeasuringStatus = NOT_MEASURING;
 		
 		PORTD.PIN4CTRL = PORT_ISC_RISING_gc; 
@@ -252,9 +243,14 @@ void configureTimerCounter(){
 	TCD5.CCA = 950;		//Initial value for compare
 }
 
-
+//This triggers when a PWM signal hasn't been detected for the past ~24mS
 ISR (TCC5_OVF_vect){
 	TCC5.INTFLAGS |= 0b1;  //Reset interrupt flag
+	
+	PWMMeasuringStatus = NOT_MEASURING;		//Reset the "NOT MEASURING" flag
+	PORTD.PIN4CTRL = PORT_ISC_RISING_gc;	//Reconfigure the port to wait for a high pulse
+	
+	steeringPWMPeriod = 1500;				//Set the steering PWM period to a stable "standby position"
 }
 
 /*

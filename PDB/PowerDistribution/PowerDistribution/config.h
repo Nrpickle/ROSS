@@ -25,5 +25,6 @@ volatile uint8_t broadcastStatus = 0;
 volatile uint64_t longCounter = 0;
 volatile uint8_t PWMMeasuringStatus = NOT_MEASURING;
 volatile uint64_t longTemp = 0;
+volatile uint16_t steeringPWMPeriod;		//Contains the steering PWM input period in uS
 
 #endif /* CONFIG_H_ */
