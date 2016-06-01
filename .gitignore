@@ -57,3 +57,8 @@ Temporary Items
 PDB/PowerDistribution/PowerDistribution/Debug/PowerDistribution.hex
 *.elf
 *.map
+*.srec
+PDB/PowerDistribution/PowerDistribution/Debug/PowerDistribution.map
+*.lss
+PDB/PowerDistribution/PowerDistribution/Debug/PowerDistribution.hex
+*.o
