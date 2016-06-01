@@ -16,6 +16,14 @@ void SendStringPC(char *stufftosend){
 	}
 }
 
+void SendCharPC(char charToSend){
+	USART_PutChar(&COMP_USART, charToSend);
+}
+
+void SendCharONOFF(char charToSend){
+	USART_PutChar(&ONOFF_USART, charToSend);	
+}
+
 void SendNumPC(uint16_t numToSend){
 	char buffer[20];
 	itoa(numToSend, buffer, 10);

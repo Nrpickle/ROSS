@@ -39,6 +39,8 @@ extern void configureUSART();
 extern uint8_t ReadCalibrationByte( uint8_t index );
 //usart
 extern void SendStringPC(char *stufftosend);
+extern void SendCharPC(char charToSend);
+extern void SendCharONOFF(char charToSend);
 extern void SendNumPC(uint16_t numToSend);
 extern void SendFloatPC(double numToSend);
 
@@ -51,6 +53,7 @@ extern volatile uint16_t steeringPWMPeriod;
 
 //Main program defines
 #define RSSI_MAX_COUNT 273   //Calculated to have a max of 272.629 (32.768*.00832)
+#define STATIC_STATUS_OUTPUT_COUNT 5
 
 //DEBUGGING
 //The following are debugging options available

@@ -30,6 +30,10 @@ volatile RSSI_type RSSI;
 volatile int toggle = 0;
 volatile int temp = 1000;
 uint8_t remoteInput = 0;
+uint8_t remoteOutputCountdown = 0;  //Count to "only output start stop state for 5 states"
+
+#define REMOTE_START_CHECK 0x1
+#define REMOTE_STOP_CHECK 0x2
 
 int main(void)
 {
@@ -56,25 +60,42 @@ int main(void)
 	SendStringPC((char *)"#[INIT ROSS PDB]\n\r");
 	SendStringPC((char *)"#Firmware version ");
 	SendStringPC((char *)FIRMWARE_VERSION_STR);
-	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | XTend RSSI | \"Remote Input\" | \n\r");
+	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | XTend RSSI | \"Remote Input\" \n\r");
 	
 	
     while (1) 
     {
 
-		_delay_ms(1);
+		_delay_ms(1);		
 
 		//Check for commands from the computer
 		if(USART_IsRXComplete(&COMP_USART)){
 			receivedUSARTData = USART_GetChar(&COMP_USART);
+			
+			//Check if the inputted command is within the range to be
+			//forwarded to the ON/OFF switch
+			if(receivedUSARTData >= 30 && receivedUSARTData <= 65){
+				SendCharONOFF(receivedUSARTData);
+			}
+			
 			if(receivedUSARTData == 'y')
 				REAR_RELAY_SET();
 			else if(receivedUSARTData == 'n')
 				REAR_RELAY_CLR();
 		}		
 		
+		//Check for commands from the ON/OFF Switch
 		if(USART_IsRXComplete(&ONOFF_USART)){
-			
+			receivedUSARTData = USART_GetChar(&ONOFF_USART);
+			//CHECK FOR IF START OR STOP COMMAND
+			if(receivedUSARTData == '+'){  //Remote start requested
+				remoteInput = REMOTE_START_CHECK;
+				remoteOutputCountdown = STATIC_STATUS_OUTPUT_COUNT;
+			}	
+			else if(receivedUSARTData == '-'){  //Remote stop requested
+				remoteInput = REMOTE_STOP_CHECK;
+				remoteOutputCountdown = STATIC_STATUS_OUTPUT_COUNT;
+			}
 		}
 		
 		//TODO: if(pixhawkControl)
@@ -121,6 +142,11 @@ int main(void)
 			
 			//Newline
 			SendStringPC((char *)"\n\r");
+	
+			//Check if we have outputs that need to "expire"
+			if(--remoteOutputCountdown == 0){
+				remoteInput = 0;
+			}
 	
 			//Check the updating speed setting
 			//The speed shouldn't be set lower than maybe 75mS due to RSSI processing time
