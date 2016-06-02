@@ -11,7 +11,7 @@
  
  - Ensure accurate ambient temperature sensor measurements
  - Enable all current sensing appropriately
- - Enable current sense fault detection
+ - Enable current sense fault detection (is this actually desired?)
 
  COMPLETED
  - Enable PWM passthrough / steering control
@@ -37,7 +37,7 @@ uint16_t manualPWMOutput = 1500;		//uS of desired override PWM output
 uint16_t pixhawkOverrideCountdown = 0;	//Amount of message cycles to maintain override
 
 #define REMOTE_START_CHECK 0x1
-#define REMOTE_STOP_CHECK 0x2
+#define REMOTE_STOP_CHECK  0x2
 
 int main(void)
 {
@@ -151,6 +151,7 @@ int main(void)
 							//of the interpreted PWM signal is so high, there's no reason
 							//to sample it continuously. Also, on the same side of the coin,
 							//it is quick to sample.
+			
 			
 			//Actually output the desired values
 			//Not the most elegant code in the world, but it works...

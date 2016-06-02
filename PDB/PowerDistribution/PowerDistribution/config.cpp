@@ -100,6 +100,9 @@ void configureIO(void){
 	PORTD.DIRCLR = PIN0_bm;  //Temp-Sensor Pin
 	PORTD.DIRCLR = PIN1_bm;  //Voltage Sense - Electronics Battery
 	PORTD.DIRCLR = PIN2_bm;  //Voltage Sense - Rear Battery
+
+	//Set the Current Sense Fault detect pin to be an input
+	PORTC.DIRCLR = PIN4_bm;
 	
 	//Setup the RSSI input
 	PORTA.DIRCLR = PIN2_bm;				//Set the RSSI pin to be an input
@@ -112,7 +115,6 @@ void configureIO(void){
 	PORTD.INTCTRL  = PMIC_MEDLVLEN_bm;	//Set PORTC's interrupt to be medium level
 	PORTD.INTMASK  = PIN4_bm;			//Configure the PWM input pin as an interrupt
 	PORTD.PIN4CTRL = PORT_ISC_RISING_gc;  //Init the pin as a rising edge interrupt only
-
 	
 	//Initialize output values
 	STATUS_CLR();

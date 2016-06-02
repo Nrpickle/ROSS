@@ -27,6 +27,9 @@
 #define CHECK_DIP_SW_2(void) (!(PORTC.IN & PIN2_bm)) //Returns true if bit 1 of the DIP Switch is "ON"
 #define CHECK_DIP_SW_1(void) (!(PORTC.IN & PIN3_bm)) //Returns true if bit 2 of the DIP Switch is "ON"
 
+//Current Sensor Fault Detection
+#define CHECK_CURRENT_SENSE_FAULT(void) (PORTC.IN & PIN4_bm)
+
 //XTend RSSI Input
 #define READ_RSSI_PIN(void) (PORTA.IN & PIN2_bm)
 
