@@ -75,7 +75,6 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(13, HIGH);
   statusTimer.update();
   switch(state){
     case checkBuffer:
