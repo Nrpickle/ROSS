@@ -9,14 +9,14 @@
  
  TODOs
  
- - Enable accurate ambient temperature sensor measurements
- - Enable PWM Override
- - Enable On/Off passthrough
+ - Ensure accurate ambient temperature sensor measurements
  - Enable all current sensing appropriately
  - Enable current sense fault detection
 
  COMPLETED
  - Enable PWM passthrough / steering control
+ - Enable PWM Override
+ - Enable On/Off passthrough
  */ 
 
 #define FIRMWARE_VERSION_STR ".2"
@@ -31,6 +31,10 @@ volatile int toggle = 0;
 volatile int temp = 1000;
 uint8_t remoteInput = 0;
 uint8_t remoteOutputCountdown = 0;  //Count to "only output start stop state for 5 states"
+
+uint8_t  pixhawkOverride = 0;			//Shall we override the Pixhawk's PWM signal? :sunglasses:
+uint16_t manualPWMOutput = 1500;		//uS of desired override PWM output
+uint16_t pixhawkOverrideCountdown = 0;	//Amount of message cycles to maintain override
 
 #define REMOTE_START_CHECK 0x1
 #define REMOTE_STOP_CHECK 0x2
@@ -82,24 +86,54 @@ int main(void)
 				REAR_RELAY_SET();
 			else if(receivedUSARTData == 'n')
 				REAR_RELAY_CLR();
+			
+			if(receivedUSARTData == 70){  //Then we need to cancel our override (if it exists)
+				pixhawkOverride = 0;
+				pixhawkOverrideCountdown = 0;
+			}
+			
+			if(receivedUSARTData >= 71 && receivedUSARTData <= 87){		//Then we need to process a PWM override
+				pixhawkOverride = 1;
+				manualPWMOutput = receivedUSARTData * 50 - 2450;  //This will generate the correct output per https://goo.gl/7wYL6b
+				if(CHECK_DIP_SW_2()){	//5 second update time
+					if(TCC4.PER == TC_1024_100MS)
+						pixhawkOverrideCountdown = 50;
+					else if(TCC4.PER == TC_1024_500MS)
+						pixhawkOverrideCountdown = 10;
+					else
+						pixhawkOverrideCountdown = 50;
+				}
+				else {	//1 second update time
+					if(TCC4.PER == TC_1024_100MS)
+						pixhawkOverrideCountdown = 10;
+					else if(TCC4.PER == TC_1024_500MS)
+						pixhawkOverrideCountdown = 2;
+					else
+						pixhawkOverrideCountdown = 10;
+				}
+			}
 		}		
 		
 		//Check for commands from the ON/OFF Switch
 		if(USART_IsRXComplete(&ONOFF_USART)){
 			receivedUSARTData = USART_GetChar(&ONOFF_USART);
 			//CHECK FOR IF START OR STOP COMMAND
-			if(receivedUSARTData == 10){  //Remote start requested
+			if(receivedUSARTData == 10){	//Remote start requested
 				remoteInput = REMOTE_START_CHECK;
 				remoteOutputCountdown = STATIC_STATUS_OUTPUT_COUNT;
 			}	
-			else if(receivedUSARTData == 20){  //Remote stop requested
+			else if(receivedUSARTData == 20){	//Remote stop requested
 				remoteInput = REMOTE_STOP_CHECK;
 				remoteOutputCountdown = STATIC_STATUS_OUTPUT_COUNT;
 			}
 		}
 		
-		//TODO: if(pixhawkControl)
-		TC_PWM_SET(steeringPWMPeriod);	//Process the artificial PWM output
+		if(pixhawkOverride){	//If we do want to override the signal
+			TC_PWM_SET(manualPWMOutput);	//Output the desired override PWM output
+		}
+		else {  //We don't want to overrride the signal
+			TC_PWM_SET(steeringPWMPeriod);	//Output the Pixhawk PWM signal
+		}
 		
 		if(broadcastStatus){  //This variable becomes true every interval that the user wants info reported
 			broadcastStatus = 0;
@@ -146,6 +180,15 @@ int main(void)
 			//Check if we have outputs that need to "expire"
 			if(--remoteOutputCountdown == 0){
 				remoteInput = 0;
+			}
+			
+			//Check on the output overriding
+			if(pixhawkOverrideCountdown){	//If we are still counting down, this also means that
+											//we are currently overriding our output
+				--pixhawkOverrideCountdown;	//Decrement our counter
+			}
+			else {	//If we are not counting down, then we want to ensure we are outputting the Pixhawk PWM
+				pixhawkOverride = 0;
 			}
 	
 			//Check the updating speed setting
