@@ -32,6 +32,15 @@ The first sensor used was the 36, while the 37 has a smaller range but is more p
 //#define TMP36
 #define TMP37
 
+/*  DEBUGGING  */
+//The following are debugging options available
+
+//#define PWM_DEBUGGING_OUTPUT
+//#define RSSI_DEBUGGING_OUTPUT
+//#define OUTPUT_TEMP_SENSOR_VOLTAGE
+//#define BATT_VOLTAGE_RAW_COUNT_OUTPUT
+#define BATT_VOLTAGE_RAW_OUTPUT
+//#define OUTPUT_LOT_AND_WAFER_INFO
 
 
 //Datatype Definitions
@@ -65,6 +74,10 @@ enum {
 	COORDX1,    // Wafer Coordinate X Byte 1
 	COORDY0,    // Wafer Coordinate Y Byte 0
 	COORDY1,    // Wafer Coordinate Y Byte 1
+};
+
+enum {
+	
 };
 
 #endif /* PROJECTHEADER_H_ */

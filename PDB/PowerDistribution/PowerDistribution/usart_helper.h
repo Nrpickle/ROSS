@@ -18,6 +18,7 @@ void SendCharPC(char charToSend);
 void SendCharONOFF(char charToSend);
 void SendNumPC(uint8_t numToSend);
 void SendNumPC(uint16_t numToSend);
+void SendNumPC(int16_t numToSend);
 void SendNumPC(uint64_t numToSend);
 void SendFloatPC(double numToSend);
 

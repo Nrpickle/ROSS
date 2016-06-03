@@ -352,6 +352,11 @@ uint8_t ReadSignatureByte(uint16_t Address)
 	return Result;
 }
 
+/*
+
+Note: This function requires serial and should be called after configureUSART()
+
+*/
 void configureSerialNumber(){
 	DeviceSignature[ 0] = ReadSignatureByte(LOTNUM0);
 	DeviceSignature[ 1] = ReadSignatureByte(LOTNUM1);
@@ -376,6 +381,20 @@ void configureSerialNumber(){
 	for(int i = 1; i < 4; ++i){  //Original stops at 5
 		UC_WAFER_ID += DeviceSignature[i+6] * (100*i);
 	}
+	
+	serialNumber = -1; //Set the default serial number to -1 ("Not assigned yet")
+	
+	//Hardcoded serial number lookups (don't judge)
+	if(UC_LOT_NUMBER == 0x13E91 && UC_WAFER_ID == 0x3913)
+		serialNumber = 1;
+
+	#ifdef OUTPUT_LOT_AND_WAFER_INFO
+		SendStringPC((char *)"#[Lot ID Number: ");
+		SendNumPC(UC_LOT_NUMBER);
+		SendStringPC((char *)"]");
+	
+		SendStringPC((char *)"[Wafer ID Number: ");
+		SendNumPC(UC_WAFER_ID);
+		SendStringPC((char *)"]");
+	#endif
 }
-
-

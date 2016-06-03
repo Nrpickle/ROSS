@@ -44,6 +44,12 @@ void SendNumPC(uint16_t numToSend){
 	SendStringPC(buffer);
 }
 
+void SendNumPC(int16_t numToSend){
+	char buffer[20];
+	itoa(numToSend, buffer, 10);
+	SendStringPC(buffer);
+}
+
 /*
 For this function, we need to split the 64 bit integer into two separate
 32 bit integers because %llx and %lld are not implemented in this version

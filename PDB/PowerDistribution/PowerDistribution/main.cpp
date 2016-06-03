@@ -50,19 +50,6 @@ int main(void)
 	configureXCL();
 	configureSerialNumber();
 		
-	/*
-	SendNumPC(DeviceSignature[1]);
-	SendStringPC((char *)"\n\r");
-	SendNumPC(DeviceSignature[2]);
-	SendStringPC((char *)"\n\r");
-	SendNumPC(DeviceSignature[3]);
-	SendStringPC((char *)"\n\r");
-	SendNumPC(DeviceSignature[4]);
-	SendStringPC((char *)"\n\r");
-	SendNumPC(DeviceSignature[5]);
-	SendStringPC((char *)"\n\r");
-	*/
-	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
 	MED_LEVEL_INTERRUPTS_ENABLE();
 	HIGH_LEVEL_INTERRUPTS_ENABLE();
@@ -78,27 +65,12 @@ int main(void)
 	SendStringPC("\n\r#[INIT ROSS PDB]\n\r");
 	SendStringPC("#Firmware version ");
 	SendStringPC(FIRMWARE_VERSION_STR);
+	SendStringPC("\n\r#Serial Number: ");
+	if(serialNumber == -1)
+		SendStringPC("NOT SET");
+	else
+		SendNumPC(serialNumber);
 	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | XTend RSSI | \"Remote Input\" \n\r");
-	
-	
-	for(int i = 0; i < 11; ++i){
-		SendNumPC(DeviceSignature[i]);
-		SendStringPC((char *)"\n\r");
-	}
-	
-	/* NEED TO WRITE 64 bit SendNumPC */
-	
-	SendStringPC((char *)"[Lot ID Number: ");
-	SendNumPC(UC_LOT_NUMBER);
-	SendStringPC((char *)"]");
-	
-	SendStringPC((char *)"[Wafer ID Number: ");
-	SendNumPC(UC_WAFER_ID);
-	SendStringPC((char *)"]");
-	
-	SendNumPC((uint64_t) 0x1234567891AAAFC);
-	
-	while(1);
 	
     while (1) 
     {
@@ -280,6 +252,12 @@ uint16_t inline getXTendRSSI(){
 double ADCCountToVoltage(uint16_t adcCount){
   
   //Testing and comparing voltages to corresponding count values resulted in this fun function:
+  switch(serialNumber){
+	  case 1:
+		return adcCount * 0.0011982182628062362 + 0.0023407572383072894; //I figure the compiler will trim off what it can't actually use...
+	  default:
+		return 1;
+  }
   return adcCount * 0.0011982182628062362 + 0.0023407572383072894; //I figure the compiler will trim off what it can't actually use...
 
 	
@@ -309,6 +287,10 @@ int16_t sampleBatteryVoltage(void){
 	ADCA.INTFLAGS = (1 << 0);
 	
 	return 	ADCA.CH0.RES;
+}
+
+uint16_t sampleCurrentSensor(uint8_t sensorID){
+	
 }
 
 double getEBoxTemperature(){
@@ -357,7 +339,7 @@ double getEBoxTemperature(){
 
 double getElectronicsBatteryVoltage(){
 
-	int avgVal = 50;
+	int avgVal = 100;
 	uint32_t sum = 0;
 	
 	for(int i = 0; i < avgVal; ++i){
@@ -368,11 +350,17 @@ double getElectronicsBatteryVoltage(){
 	#ifdef BATT_VOLTAGE_RAW_COUNT_OUTPUT
 		SendStringPC((char *)"[Raw Volt Count: ");
 		SendNumPC(electronicsVoltageCount);
-		SendStringPC((char *)"]");
+		SendStringPC((char *)"] ");
 	#endif
 	
 	double electronicsVoltage = ADCCountToVoltage(electronicsVoltageCount);
 	double calculatedElectronicsVoltage =  (electronicsVoltage / .56) + (10.0 - .05);
+
+	#ifdef BATT_VOLTAGE_RAW_OUTPUT
+	SendStringPC((char *)"[Raw Voltage: ");
+	SendFloatPC(electronicsVoltage);
+	SendStringPC((char *)"] ");
+	#endif
 
 	return calculatedElectronicsVoltage;
 }
