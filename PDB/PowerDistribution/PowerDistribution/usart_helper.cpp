@@ -16,6 +16,14 @@ void SendStringPC(char *stufftosend){
 	}
 }
 
+//Sends a string to the computer
+void SendStringPC(const char stufftosend[]){
+	for(int i = 0 ; stufftosend[i] != '\0' ; i++){
+		while(!USART_IsTXDataRegisterEmpty(&COMP_USART));
+		USART_PutChar(&COMP_USART, stufftosend[i]);
+	}
+}
+
 void SendCharPC(char charToSend){
 	USART_PutChar(&COMP_USART, charToSend);
 }
@@ -24,9 +32,36 @@ void SendCharONOFF(char charToSend){
 	USART_PutChar(&ONOFF_USART, charToSend);	
 }
 
+void SendNumPC(uint8_t numToSend){
+	char buffer[10];
+	itoa(numToSend, buffer, 10);
+	SendStringPC(buffer);
+}
+
 void SendNumPC(uint16_t numToSend){
 	char buffer[20];
 	itoa(numToSend, buffer, 10);
+	SendStringPC(buffer);
+}
+
+/*
+For this function, we need to split the 64 bit integer into two separate
+32 bit integers because %llx and %lld are not implemented in this version
+of sprintf/
+*/
+void SendNumPC(uint64_t numToSend){
+	char buffer[50];
+	uint32_t tempLSB;
+	uint32_t tempMSB;
+	
+	tempLSB = numToSend & 0xFFFFFFFF;	//Least significant four bytes
+	tempMSB = (uint32_t) ((numToSend & 0xFFFFFFFF00000000) >> 32);		//Most significant four bytes
+		
+	if(tempMSB)
+		sprintf(buffer,"%lx%lx", tempMSB, tempLSB);		
+	else
+		sprintf(buffer,"%lx", tempLSB);		
+	
 	SendStringPC(buffer);
 }
 
@@ -44,7 +79,7 @@ void SendFloatPC(double numToSend){
 }
 
 void configureUSART(void){
-	//ENABLE COMUPTER USART
+	/**** ENABLE COMUPTER USART ****/
 	
 	//Set TX (pin7) to be output
 	PORTC.DIRSET = PIN7_bm;
@@ -63,7 +98,7 @@ void configureUSART(void){
 	USART_Rx_Enable(&COMP_USART);
 	USART_Tx_Enable(&COMP_USART);
 	
-	//ENABLE ON/OFF SWITCH USART
+	/**** ENABLE ON/OFF SWITCH USART ****/
 	
 	//Set TX (pin7) to be output
 	PORTD.DIRSET = PIN7_bm;

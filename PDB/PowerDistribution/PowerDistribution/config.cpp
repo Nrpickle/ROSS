@@ -341,3 +341,41 @@ uint8_t ReadCalibrationByte( uint8_t index ){
 
 	return( result );
 }
+
+uint8_t ReadSignatureByte(uint16_t Address)
+{
+	NVM_CMD = NVM_CMD_READ_CALIB_ROW_gc;
+	uint8_t Result;
+	__asm__ ("lpm %0, Z\n" : "=r" (Result) : "z" (Address));
+	//  __asm__ ("lpm \n  mov %0, r0 \n" : "=r" (Result) : "z" (Address) : "r0");
+	NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+	return Result;
+}
+
+void configureSerialNumber(){
+	DeviceSignature[ 0] = ReadSignatureByte(LOTNUM0);
+	DeviceSignature[ 1] = ReadSignatureByte(LOTNUM1);
+	DeviceSignature[ 2] = ReadSignatureByte(LOTNUM2);
+	DeviceSignature[ 3] = ReadSignatureByte(LOTNUM3);
+	DeviceSignature[ 4] = ReadSignatureByte(LOTNUM4);
+	DeviceSignature[ 5] = ReadSignatureByte(LOTNUM5);
+	DeviceSignature[ 6] = ReadSignatureByte(WAFNUM );
+	DeviceSignature[ 7] = ReadSignatureByte(COORDX0);
+	DeviceSignature[ 8] = ReadSignatureByte(COORDX1);
+	DeviceSignature[ 9] = ReadSignatureByte(COORDY0);
+	DeviceSignature[10] = ReadSignatureByte(COORDY1);
+	
+	UC_LOT_NUMBER = DeviceSignature[0];
+	
+	for(int i = 1; i < 6; ++i){
+		UC_LOT_NUMBER += DeviceSignature[i] * (100*i);//(DeviceSignature[i] << i*8);
+	}
+	
+	UC_WAFER_ID = DeviceSignature[6];
+	
+	for(int i = 1; i < 4; ++i){  //Original stops at 5
+		UC_WAFER_ID += DeviceSignature[i+6] * (100*i);
+	}
+}
+
+

@@ -48,7 +48,23 @@ struct RSSI_type {
 };
 
 
+
 //Enumerations
 enum measuring {MEASURING, NOT_MEASURING}; //Works with the RSSI interpret
+
+//Used for generating a serial number
+enum {
+	LOTNUM0=8,  // Lot Number Byte 0, ASCII
+	LOTNUM1,    // Lot Number Byte 1, ASCII
+	LOTNUM2,    // Lot Number Byte 2, ASCII
+	LOTNUM3,    // Lot Number Byte 3, ASCII
+	LOTNUM4,    // Lot Number Byte 4, ASCII
+	LOTNUM5,    // Lot Number Byte 5, ASCII
+	WAFNUM =16, // Wafer Number
+	COORDX0=18, // Wafer Coordinate X Byte 0
+	COORDX1,    // Wafer Coordinate X Byte 1
+	COORDY0,    // Wafer Coordinate Y Byte 0
+	COORDY1,    // Wafer Coordinate Y Byte 1
+};
 
 #endif /* PROJECTHEADER_H_ */

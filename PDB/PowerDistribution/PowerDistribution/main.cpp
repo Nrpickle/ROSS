@@ -48,6 +48,20 @@ int main(void)
 	configureADCs();
 	configureRTC();
 	configureXCL();
+	configureSerialNumber();
+		
+	/*
+	SendNumPC(DeviceSignature[1]);
+	SendStringPC((char *)"\n\r");
+	SendNumPC(DeviceSignature[2]);
+	SendStringPC((char *)"\n\r");
+	SendNumPC(DeviceSignature[3]);
+	SendStringPC((char *)"\n\r");
+	SendNumPC(DeviceSignature[4]);
+	SendStringPC((char *)"\n\r");
+	SendNumPC(DeviceSignature[5]);
+	SendStringPC((char *)"\n\r");
+	*/
 	
 	LOW_LEVEL_INTERRUPTS_ENABLE();
 	MED_LEVEL_INTERRUPTS_ENABLE();
@@ -61,16 +75,35 @@ int main(void)
 	RSSI.sampleCount = 0;
 
 	//Init string with basic documentation
-	SendStringPC((char *)"#[INIT ROSS PDB]\n\r");
-	SendStringPC((char *)"#Firmware version ");
-	SendStringPC((char *)FIRMWARE_VERSION_STR);
+	SendStringPC("\n\r#[INIT ROSS PDB]\n\r");
+	SendStringPC("#Firmware version ");
+	SendStringPC(FIRMWARE_VERSION_STR);
 	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | XTend RSSI | \"Remote Input\" \n\r");
 	
+	
+	for(int i = 0; i < 11; ++i){
+		SendNumPC(DeviceSignature[i]);
+		SendStringPC((char *)"\n\r");
+	}
+	
+	/* NEED TO WRITE 64 bit SendNumPC */
+	
+	SendStringPC((char *)"[Lot ID Number: ");
+	SendNumPC(UC_LOT_NUMBER);
+	SendStringPC((char *)"]");
+	
+	SendStringPC((char *)"[Wafer ID Number: ");
+	SendNumPC(UC_WAFER_ID);
+	SendStringPC((char *)"]");
+	
+	SendNumPC((uint64_t) 0x1234567891AAAFC);
+	
+	while(1);
 	
     while (1) 
     {
 
-		_delay_ms(1);		
+		_delay_ms(1);
 
 		//Check for commands from the computer
 		if(USART_IsRXComplete(&COMP_USART)){
@@ -168,7 +201,7 @@ int main(void)
 			SendStringPC((char *)"|");
 			SendNumPC(RSSI.value);
 			if(RSSI.value == 0)
-				SendNumPC(zero);
+				SendStringPC("0");
 			SendStringPC((char *)"|");
 			SendNumPC(remoteInput);
 			//SendStringPC((char *)"|");
@@ -194,6 +227,7 @@ int main(void)
 	
 			//Check the updating speed setting
 			//The speed shouldn't be set lower than maybe 75mS due to RSSI processing time
+			//Be careful if you change these, as they are referenced elsewhere (e.g. Override controls)
 			if(CHECK_DIP_SW_1()){
 				TCC4.PER = TC_1024_100MS;  //100mS delay
 			}
@@ -330,6 +364,13 @@ double getElectronicsBatteryVoltage(){
 		sum += sampleBatteryVoltage();
 	}
 	uint16_t electronicsVoltageCount = sum / avgVal;
+	
+	#ifdef BATT_VOLTAGE_RAW_COUNT_OUTPUT
+		SendStringPC((char *)"[Raw Volt Count: ");
+		SendNumPC(electronicsVoltageCount);
+		SendStringPC((char *)"]");
+	#endif
+	
 	double electronicsVoltage = ADCCountToVoltage(electronicsVoltageCount);
 	double calculatedElectronicsVoltage =  (electronicsVoltage / .56) + (10.0 - .05);
 
@@ -358,3 +399,6 @@ void inline debuggingOutput(){
 		SendNumPC(RSSI.countDifference);
 	#endif
 }
+
+
+

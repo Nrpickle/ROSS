@@ -13,9 +13,12 @@
 
 void configureUSART();
 void SendStringPC(char *stufftosend);
+void SendStringPC(const char stufftosend[]);
 void SendCharPC(char charToSend);
 void SendCharONOFF(char charToSend);
+void SendNumPC(uint8_t numToSend);
 void SendNumPC(uint16_t numToSend);
+void SendNumPC(uint64_t numToSend);
 void SendFloatPC(double numToSend);
 
 #endif /* USARTROSS_H_ */
