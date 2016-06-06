@@ -7,9 +7,13 @@
 //  Copyright (c) 2014 RBR Ltd. All rights reserved.
 //
 
+#include <stdint.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+int _CRT_fmode = _O_BINARY;
+int _fmode = _O_BINARY;
 
 typedef float float32_t;
 
