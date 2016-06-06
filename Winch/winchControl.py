@@ -12,7 +12,7 @@ def closeCheck():
 		
 ser = serial.Serial(
     port='COM7',\
-    baudrate=9600,\
+    baudrate=57600,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
     bytesize=serial.EIGHTBITS,\
@@ -49,6 +49,9 @@ elif stop == 8:
 elif stop == 16:
 	for x in range(len(parameters)):
 		parameters[x] = 0xEE
+elif stop == 32:
+	for x in range(len(parameters)):
+		parameters[x] = 0xAB
 
 print parameters
 

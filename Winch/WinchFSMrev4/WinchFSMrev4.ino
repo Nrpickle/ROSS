@@ -40,21 +40,17 @@ bool depthReached = false;
 bool softStopped = false;
 bool halt = false;
 bool returned = true;
+bool dataCorrupted = false;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial1.begin(9600);
+  Serial1.begin(57600);
   pinMode(13, OUTPUT); //Remove for final revision
   while(!Serial1.available()); //Don't begin until start command is sent over serial
   ESC.attach(9); //Connect ESC
-  if(Serial1.available() != '0'){ //If that start command is '0' skip calibration
-    ESC.write(180);
-    delay(4000);
-    ESC.write(0);
-    delay(4000);
-    ESC.write(90);
-    delay(6000);
-  }
+  if(Serial1.read() != '0')//If that start command is '0' skip calibration
+    calibrateESC();
+  ESC.write(90);
   pinMode(remoteStartPin, OUTPUT);
   pinMode(remoteStopPin, OUTPUT);
   pinMode(remoteStartLED, OUTPUT);
@@ -67,7 +63,7 @@ void setup() {
   digitalWrite(remoteStartLED, LOW);
   digitalWrite(remoteStopLED, LOW);
   statusTimer.every(1000, sendStatus);
-  while(digitalRead(up) == true)
+  while(digitalRead(up) == true) //Make sure the winch starts in the upright position
     ESC.write(80);
   ESC.write(90);
   winchEncoder.write(0);
@@ -93,11 +89,11 @@ void loop() {
         speedIn = 0;
         takeProfile();
       }
-      else if(header == 0xBB){//STOP:Return at half speed
+      else if(header == 0xBB){//STOP:Return slow as possible
         if(softStopped == false)
           softStopped = softStop();
         depthReached = true;
-        speedIn = 45;
+        speedIn = 80;
         takeProfile();
       }
       else if(header == 0xCC){ //STOP:Halt
@@ -110,6 +106,8 @@ void loop() {
         remoteStart();
       else if(header == 0xEE)
         remoteStop();
+      else if(header == 0xAB)
+        calibrateESC();
       state = checkBuffer;
     break; 
   }
@@ -133,12 +131,21 @@ void updateParameters(){
   buffSize = 0; //Reset buffer size and control variables
   depthReached = false;
   softStopped = false;
-  halt = false;  
-  upperByte = upperByte << 8;
-  depth = upperByte + lowerByte;
-  depth = depth * 3936; //pings/revolution
-  speedOut = 90 + (speedOut*90/254);
-  speedIn = 90 - (speedIn*90/254);
+  halt = false;
+  if(checksum == (((speedOut ^ speedIn) ^ upperByte) ^ lowerByte)){
+    upperByte = upperByte << 8;
+    depth = upperByte + lowerByte;
+    depth = depth * 3936; //pings/revolution
+    speedOut = 90 + (speedOut*90/254);
+    speedIn = 90 - (speedIn*90/254);
+    dataCorrupted = false;
+  }
+  else{
+    depth = 0;
+    speedOut = 0;
+    speedIn = 0;
+    dataCorrupted = true;
+  }
 }
 
 void takeProfile(){
@@ -179,6 +186,7 @@ void takeProfile(){
   else if(depthReached == true && halt == false){
     if(!digitalRead(up) == true){ //Stop when A-frame is in full upright position
       ESC.write(90);
+      winchEncoder.write(0); //Account for line stretching - reset after each cast
       returned = true;
     }
     else if(winchEncoder.read() > 40000){ //change back to else if
@@ -205,7 +213,7 @@ void takeProfile(){
       ESC.write(70);
       returned = false;
     }
-    else if(winchEncoder.read() <= 0){ //Winch will still stop if switches fail
+    else if(winchEncoder.read() <= (-20*3936)){ //Winch will stop if line snaps and can't engage sensors
       ESC.write(90);
       returned = true;
   }  
@@ -262,12 +270,27 @@ void remoteStop(){
 }
 
 void sendStatus(){
-  if(returned == true){
-    Serial1.print("STATUS ");
-    Serial1.println('1'); //Ready
+  if(dataCorrupted == false){
+    if(returned == true){
+      Serial1.print("STATUS ");
+      Serial1.println('1'); //Ready
+    }
+    else{
+      Serial1.print("STATUS ");
+      Serial1.println('0'); //Busy
+    }
   }
-  else if(returned == false){
+  else{
     Serial1.print("STATUS ");
-    Serial1.println('0'); //Bussy
+    Serial1.println('3'); //Data corrupted
   }
+}
+
+void calibrateESC(){
+  ESC.write(180);
+  delay(4000);
+  ESC.write(0);
+  delay(4000);
+  ESC.write(90);
+  delay(6000);
 }
