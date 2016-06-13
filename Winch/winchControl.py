@@ -19,22 +19,20 @@ ser = serial.Serial(
     timeout= None) #Open serial port
 ser.close()
 
-
-
-header = 255
-speedOut = int(argv[1]) #Collect runtime parameters
-speedIn = int(argv[2])
-depth = int(argv[3])
-upperDepthByte = depth >> 8
-lowerDepthByte = depth & 0xFF
+parameters = [0,0,0,0,0,0,0]
 stop = int(argv[4])
-checksum = (((speedOut ^ speedIn) ^ upperDepthByte) ^ lowerDepthByte) #XOR all variables to create checksum
-footer = 255
 
-parameters = [header , speedOut, speedIn, upperDepthByte, lowerDepthByte, checksum, footer] #Save parameters in array
-
-
-if stop == 1:
+if stop == 0:
+	header = 255
+	speedOut = int(argv[1]) #Collect runtime parameters
+	speedIn = int(argv[2])
+	depth = int(argv[3])
+	upperDepthByte = depth >> 8
+	lowerDepthByte = depth & 0xFF
+	checksum = (((speedOut ^ speedIn) ^ upperDepthByte) ^ lowerDepthByte) #XOR all variables to create checksum
+	footer = 255
+	parameters = [header , speedOut, speedIn, upperDepthByte, lowerDepthByte, checksum, footer] #Save parameters in array
+elif stop == 1:
 	for x in range(len(parameters)):
 		parameters[x] = 0xAA
 elif stop == 2:
@@ -49,9 +47,6 @@ elif stop == 8:
 elif stop == 16:
 	for x in range(len(parameters)):
 		parameters[x] = 0xEE
-elif stop == 32:
-	for x in range(len(parameters)):
-		parameters[x] = 0xAB
 
 print parameters
 
