@@ -44,12 +44,10 @@ bool dataCorrupted = false;
 
 void setup() {
   // put your setup code here, to run once:
+  delay(20000); //Make sure winch has time to power on before calibration
   Serial1.begin(57600);
-  pinMode(13, OUTPUT); //Remove for final revision
-  while(!Serial1.available()); //Don't begin until start command is sent over serial
   ESC.attach(9); //Connect ESC
-  if(Serial1.read() != '0')//If that start command is '0' skip calibration
-    calibrateESC();
+  calibrateESC();
   ESC.write(90);
   pinMode(remoteStartPin, OUTPUT);
   pinMode(remoteStopPin, OUTPUT);
@@ -127,6 +125,7 @@ void updateParameters(){
   speedIn = parameters[2];
   upperByte = parameters[3];
   lowerByte = parameters[4];
+  lowerByte = 142; ///test////
   checksum = parameters[5];
   buffSize = 0; //Reset buffer size and control variables
   depthReached = false;
@@ -142,10 +141,11 @@ void updateParameters(){
   }
   else{
     depth = 0;
-    speedOut = 0;
-    speedIn = 0;
+    speedOut = 90;
+    speedIn = 90;
     dataCorrupted = true;
   }
+  
 }
 
 void takeProfile(){
@@ -272,18 +272,32 @@ void remoteStop(){
 void sendStatus(){
   if(dataCorrupted == false){
     if(returned == true){
-      Serial1.print("STATUS ");
-      Serial1.println('1'); //Ready
+      Serial1.print("STATUS: ");
+      Serial1.print("1  "); //Ready
     }
     else{
-      Serial1.print("STATUS ");
-      Serial1.println('0'); //Busy
+      Serial1.print("STATUS: ");
+      Serial1.print("0  "); //Busy
     }
   }
   else{
-    Serial1.print("STATUS ");
-    Serial1.println('3'); //Data corrupted
+    Serial1.print("STATUS: ");
+    Serial1.print("3  "); //Data corrupted
+    dataCorrupted = false;
   }
+  Serial1.print("Dir: ");
+  if(depthReached == true && returned == false)
+    Serial1.print("up  ");
+  else if(depthReached == false && returned == false)
+    Serial1.print("down  ");
+  else if(returned == true)
+    Serial1.print("stationary  ");
+  
+  Serial1.print("Rev: ");
+  long long pingsFromSurface = winchEncoder.read();
+  pingsFromSurface = pingsFromSurface/3936;
+  long revsFromSurface = (long) pingsFromSurface;
+  Serial1.println(revsFromSurface);
 }
 
 void calibrateESC(){
