@@ -9,7 +9,7 @@
  
  TODOs
  
- - Ensure accurate ambient temperature sensor measurements
+
  - Enable all current sensing appropriately
  - Enable current sense fault detection (is this actually desired?)
 
@@ -17,6 +17,7 @@
  - Enable PWM passthrough / steering control
  - Enable PWM Override
  - Enable On/Off passthrough
+ - Ensure accurate ambient temperature sensor measurements
  */ 
 
 #define FIRMWARE_VERSION_STR ".2"
@@ -70,7 +71,7 @@ int main(void)
 		SendStringPC("NOT SET");
 	else
 		SendNumPC(serialNumber);
-	SendStringPC((char *)"\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | XTend RSSI | \"Remote Input\" \n\r");
+	SendStringPC("\n\r#Msg format: Electronics Batt Volt | Rear Batt Volt | Ebox Temperature | 5v_SYS Curr | 5v_Comp Curr | Throttle Current | XTend RSSI | \"Remote Input\" \n\r");
 	
     while (1) 
     {
@@ -87,16 +88,19 @@ int main(void)
 				SendCharONOFF(receivedUSARTData);
 			}
 			
+			//Rear relay processing
 			if(receivedUSARTData == 'y')
 				REAR_RELAY_SET();
 			else if(receivedUSARTData == 'n')
 				REAR_RELAY_CLR();
 			
+			//Override canceling
 			if(receivedUSARTData == 70){  //Then we need to cancel our override (if it exists)
 				pixhawkOverride = 0;
 				pixhawkOverrideCountdown = 0;
 			}
 			
+			//Steering Override processing
 			if(receivedUSARTData >= 71 && receivedUSARTData <= 87){		//Then we need to process a PWM override
 				pixhawkOverride = 1;
 				manualPWMOutput = receivedUSARTData * 50 - 2450;  //This will generate the correct output per https://goo.gl/7wYL6b
@@ -149,8 +153,13 @@ int main(void)
 			
 			//Calculated desired output values
 			double EBoxTemp = getEBoxTemperature();
-			double electronicsBatteryVoltage = getElectronicsBatteryVoltage();
-			double zero = 0.0;
+			double electronicsBatteryVoltage = getBatteryVoltage(ELECTRONICS);
+			double rearBatteryVoltage = getBatteryVoltage(REAR_BATT);
+			//double XTendCurrent = getSystemCurrent(THROTTLE);
+			double sysCurrent = getSystemCurrent(SYS_5V);
+			double compCurrent = getSystemCurrent(COMP);
+			double throttleCurrent = getSystemCurrent(THROTTLE);
+			//double zero = 0.0;
 			
 			getXTendRSSI();	//This is better here than in an interrupt because the frequency
 							//of the interpreted PWM signal is so high, there's no reason
@@ -162,15 +171,20 @@ int main(void)
 			//Not the most elegant code in the world, but it works...
 			
 			SendFloatPC(electronicsBatteryVoltage);	//Send the battery voltage
-			SendStringPC((char *)"|");
-			SendFloatPC(zero);		//Send the rear battery voltage
-			SendStringPC((char *)"|");
+			SendStringPC("|");
+			if(rearBatteryVoltage < 0)
+				SendFloatPC((double) 0);
+			else
+				SendFloatPC(rearBatteryVoltage);		//Send the rear battery voltage
+			SendStringPC("|");
 			SendFloatPC(EBoxTemp);	//Send the EBox Temperature
-			SendStringPC((char *)"|");
-			SendFloatPC(zero);		//Send 5v_SYS Curr
-			SendStringPC((char *)"|");
-			SendFloatPC(zero);		//Send 5v_SYS Curr
-			SendStringPC((char *)"|");
+			SendStringPC("|");
+			SendFloatPC(sysCurrent);		//Send 5v_SYS Curr
+			SendStringPC("|");
+			SendFloatPC(compCurrent);		//Send computer Curr (RPi)
+			SendStringPC("|");
+			SendFloatPC(throttleCurrent);
+			SendStringPC("|");
 			SendNumPC(RSSI.value);
 			if(RSSI.value == 0)
 				SendStringPC("0");
@@ -277,8 +291,12 @@ int16_t sampleTempSensorVoltage(void){
 	return 	ADCA.CH0.RES;
 }
 
-int16_t sampleBatteryVoltage(void){
-	ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN9_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for batt voltage sense
+int16_t sampleBatteryVoltage(uint8_t batterySelect){
+	if(batterySelect == ELECTRONICS)
+		ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN9_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for batt voltage sense
+	else //if (batterySelect == REAR_BATT)
+		ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN10_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for rear batt voltage sense
+		
 	ADCA.CH0.CTRL |= ADC_CH_START_bm;
 	
 	//while(((ADCA.INTFLAGS >> ADC_CH0IF_bp) & (1U << 0)) != (1U << 0)); // (1U << n) where n is the adc channel, so zero for this one
@@ -289,9 +307,36 @@ int16_t sampleBatteryVoltage(void){
 	return 	ADCA.CH0.RES;
 }
 
-uint16_t sampleCurrentSensor(uint8_t sensorID){
+uint16_t sampleCurrentSensor(uint8_t currentSelect){
+	switch(currentSelect){
+		case XTEND:
+			ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN3_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for xtend current sense
+			break;
+		case COMP:
+			ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN4_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for RPi current sense
+			break;
+		case SYS_5V:
+			ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN5_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for 5v_SYS current sense
+			break;
+		case THROTTLE:
+			ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN6_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for Throttle servo current sense
+			break;
+		case REAR:
+			ADCA.CH0.MUXCTRL = (ADC_CH_MUXPOS_PIN7_gc | ADC_CH_MUXNEGL_PIN1_gc); //PIN for Rear Battery current sense
+			break;
+	}
+		
+	ADCA.CH0.CTRL |= ADC_CH_START_bm;		//Start the ADC
 	
+	while(!(ADCA.INTFLAGS & (1 << 0)));		//Wait until the ADC has finished processing
+	ADCA.INTFLAGS = (1 << 0);				//Reset the interrupt flag
+	
+	return 	ADCA.CH0.RES;					//Return the result of the ADC calculation
+	
+	
+	return 7;
 }
+
 
 double getEBoxTemperature(){
 	
@@ -337,13 +382,13 @@ double getEBoxTemperature(){
 	return temperatureFloat;
 }
 
-double getElectronicsBatteryVoltage(){
+double getBatteryVoltage(uint8_t batterySelect){
 
 	int avgVal = 100;
 	uint32_t sum = 0;
 	
 	for(int i = 0; i < avgVal; ++i){
-		sum += sampleBatteryVoltage();
+		sum += sampleBatteryVoltage(batterySelect);
 	}
 	uint16_t electronicsVoltageCount = sum / avgVal;
 	
@@ -354,7 +399,9 @@ double getElectronicsBatteryVoltage(){
 	#endif
 	
 	double electronicsVoltage = ADCCountToVoltage(electronicsVoltageCount);
-	double calculatedElectronicsVoltage =  (electronicsVoltage / .56) + (10.0 - .05);
+	double calculatedElectronicsVoltage =  -4.1274 * pow(electronicsVoltage, 4) + 29.1147 * pow(electronicsVoltage, 3) - 75.1330 * pow(electronicsVoltage, 2) + 85.6459 * electronicsVoltage - 24.1509;
+	
+	//original, calculated sol'n: (electronicsVoltage / .56) + (10.0 - .05);
 
 	#ifdef BATT_VOLTAGE_RAW_OUTPUT
 	SendStringPC((char *)"[Raw Voltage: ");
@@ -365,9 +412,43 @@ double getElectronicsBatteryVoltage(){
 	return calculatedElectronicsVoltage;
 }
 
+
 double getSystemCurrent(uint8_t currentSelect){
 	
-	return 7.7;
+	int avgVal = 100;
+	uint32_t sum = 0;
+	
+	for(int i = 0; i < avgVal; ++i){
+		sum += sampleCurrentSensor(currentSelect);
+	}
+	uint16_t currentVoltageCount = sum / avgVal;
+	
+	#ifdef CURRENT_COUNT_RAW_OUTPUT
+	SendStringPC((char *)"[Raw Volt Count: ");
+	SendNumPC(currentVoltageCount);
+	SendStringPC((char *)"] ");
+	#endif
+	
+	double currentSenseVoltage = ADCCountToVoltage(currentVoltageCount);
+	double calculatedCurrent;
+	
+	double preampCurrentSenseVoltage;
+	if(currentSelect == XTEND){  //The XTend current is based on 5v supply, and doesn't go through an OpAmp
+		preampCurrentSenseVoltage = 7.7; //This measurement is actually impossible... whoops
+		calculatedCurrent = 7.7;
+	}
+	else{  //Anyother case besides XTend (e.g. ACS powered with 3v3
+		preampCurrentSenseVoltage = -(currentSenseVoltage/1.5) + 3.3;
+		calculatedCurrent = (preampCurrentSenseVoltage - 1.65) / 0.055;
+	}
+
+	#ifdef CURRENT_VOLTAGE_RAW_OUTPUT
+	SendStringPC((char *)"[Raw Voltage (preamp): ");
+	SendFloatPC(preampCurrentSenseVoltage);
+	SendStringPC((char *)"] ");
+	#endif
+
+	return calculatedCurrent;
 }
 
 void inline debuggingOutput(){

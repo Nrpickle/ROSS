@@ -39,7 +39,9 @@ The first sensor used was the 36, while the 37 has a smaller range but is more p
 //#define RSSI_DEBUGGING_OUTPUT
 //#define OUTPUT_TEMP_SENSOR_VOLTAGE
 //#define BATT_VOLTAGE_RAW_COUNT_OUTPUT
-#define BATT_VOLTAGE_RAW_OUTPUT
+//#define BATT_VOLTAGE_RAW_OUTPUT
+//#define CURRENT_COUNT_RAW_OUTPUT
+//#define CURRENT_VOLTAGE_RAW_OUTPUT
 //#define OUTPUT_LOT_AND_WAFER_INFO
 
 
@@ -77,7 +79,16 @@ enum {
 };
 
 enum {
-	
+	XTEND,  //Note, this is a different voltage reference than the rest
+	COMP,
+	SYS_5V,
+	THROTTLE,
+	REAR
+};
+
+enum {
+	REAR_BATT,
+	ELECTRONICS	
 };
 
 #endif /* PROJECTHEADER_H_ */

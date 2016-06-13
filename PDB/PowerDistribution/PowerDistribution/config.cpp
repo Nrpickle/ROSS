@@ -100,6 +100,11 @@ void configureIO(void){
 	PORTD.DIRCLR = PIN0_bm;  //Temp-Sensor Pin
 	PORTD.DIRCLR = PIN1_bm;  //Voltage Sense - Electronics Battery
 	PORTD.DIRCLR = PIN2_bm;  //Voltage Sense - Rear Battery
+	PORTA.DIRCLR = PIN3_bm;  //Current sense - XTend
+	PORTA.DIRCLR = PIN4_bm;  //Current sense - Computer
+	PORTA.DIRCLR = PIN5_bm;  //Current sense - 5v_SYS
+	PORTA.DIRCLR = PIN6_bm;  //Current sense - Throttle
+	PORTA.DIRCLR = PIN7_bm;  //Current sense - Rear
 
 	//Set the Current Sense Fault detect pin to be an input
 	PORTC.DIRCLR = PIN4_bm;
