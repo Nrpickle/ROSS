@@ -1,4 +1,7 @@
 #!/bin/bash
+while ! ping -c 1 -W 1 1.2.3.4; do #Wait until connection with CTD is established
+	sleep 1
+done
 if [ $# = 1 ]
 	then
 		numChannels=$1
@@ -12,8 +15,8 @@ if [ $# = 1 ]
 				/home/pi/CTD/Downloader/bin/logger2wifidownloader -offset=$profileSize -length=all > /home/pi/CTD/LogFiles/placeHolder.bin
 				cat /home/pi/CTD/LogFiles/placeHolder.bin > /home/pi/CTD/LogFiles/Profile-$timeStamp.bin
 				cat /home/pi/CTD/LogFiles/placeHolder.bin >> /home/pi/CTD/LogFiles/combinedProfile.bin
-				#cat /home/pi/CTD/LogFiles/combinedProfile.bin | /home/pi/CTD/ParseReader/a.out 6 > /home/pi/CTD/LogFiles/combinedParsedProfiles.txt
-				#cat /home/pi/CTD/LogFiles/Profile-$timeStamp.bin | /home/pi/CTD/ParseReader/a.out 6 > /home/pi/CTD/LogFiles/parsedProfile-$timeStamp.txt
+				cat /home/pi/CTD/LogFiles/combinedProfile.bin | /home/pi/CTD/ParseReader/a.out 6 > /home/pi/CTD/LogFiles/combinedParsedProfiles.txt
+				cat /home/pi/CTD/LogFiles/Profile-$timeStamp.bin | /home/pi/CTD/ParseReader/a.out 6 > /home/pi/CTD/LogFiles/parsedProfile-$timeStamp.txt
 		else
 			echo "Valid numbers of channels are 1 - 6."
 		fi
