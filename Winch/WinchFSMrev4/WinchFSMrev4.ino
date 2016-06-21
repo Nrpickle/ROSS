@@ -1,3 +1,4 @@
+//Version 1.0
 #define ENCODER_OPTIMIZE_INTERRUPTS
 
 #include <Servo.h>
@@ -14,7 +15,7 @@
 #define remoteStartLED 7
 #define remoteStopLED 8
 #define down 11 //CHANGE TO REFLECT NEW AUX BOARD WIRING
-#define up 14//CHANGE TO REFLECT NEW AUX BOARD WIRING
+#define up 14 //CHANGE TO REFLECT NEW AUX BOARD WIRING
 #define startTime 750 //How long remote start is held HIGH in milliseconds
 
 Servo ESC; //Create ESC object
@@ -23,6 +24,7 @@ Timer statusTimer; //Create timer object
 
 int parameters[7];
 int incomingByte = 0;
+
 int state = checkBuffer;
 int header;
 int winchSpeedOut;
@@ -125,7 +127,6 @@ void updateParameters(){
   speedIn = parameters[2];
   upperByte = parameters[3];
   lowerByte = parameters[4];
-  lowerByte = 142; ///test////
   checksum = parameters[5];
   buffSize = 0; //Reset buffer size and control variables
   depthReached = false;
@@ -155,7 +156,6 @@ void takeProfile(){
       ESC.write(110);
       returned = false;
     }
-//Change following line to else if statement after switches are added back in
     else if(winchEncoder.read() < (depth - 40000)){ //Increase to full speed once A-fram is down
       ESC.write(speedOut);
       returned = false;
@@ -270,22 +270,20 @@ void remoteStop(){
 }
 
 void sendStatus(){
+  Serial1.print("STATUS ");
   if(dataCorrupted == false){
     if(returned == true){
-      Serial1.print("STATUS: ");
       Serial1.print("1  "); //Ready
     }
     else{
-      Serial1.print("STATUS: ");
       Serial1.print("0  "); //Busy
     }
   }
   else{
-    Serial1.print("STATUS: ");
     Serial1.print("3  "); //Data corrupted
     dataCorrupted = false;
   }
-  Serial1.print("Dir: ");
+  Serial1.print("Dir ");
   if(depthReached == true && returned == false)
     Serial1.print("up  ");
   else if(depthReached == false && returned == false)
@@ -293,7 +291,7 @@ void sendStatus(){
   else if(returned == true)
     Serial1.print("stationary  ");
   
-  Serial1.print("Rev: ");
+  Serial1.print("Rev ");
   long long pingsFromSurface = winchEncoder.read();
   pingsFromSurface = pingsFromSurface/3936;
   long revsFromSurface = (long) pingsFromSurface;
