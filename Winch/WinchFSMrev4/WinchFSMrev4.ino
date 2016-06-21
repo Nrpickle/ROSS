@@ -1,4 +1,4 @@
-//Version 1.0
+//Version 1.1
 #define ENCODER_OPTIMIZE_INTERRUPTS
 
 #include <Servo.h>
@@ -64,7 +64,7 @@ void setup() {
   digitalWrite(remoteStopLED, LOW);
   statusTimer.every(1000, sendStatus);
   while(digitalRead(up) == true) //Make sure the winch starts in the upright position
-    ESC.write(80);
+    ESC.write(60);
   ESC.write(90);
   winchEncoder.write(0);
 }
@@ -189,28 +189,28 @@ void takeProfile(){
       winchEncoder.write(0); //Account for line stretching - reset after each cast
       returned = true;
     }
-    else if(winchEncoder.read() > 40000){ //change back to else if
+    else if(winchEncoder.read() > 20000){ //change back to else if
       ESC.write(speedIn);
       returned = false;
     }
-    else if(winchEncoder.read() > 30000){
-      ESC.write(max(20, speedIn));
-      returned = false;
-    }
-    else if(winchEncoder.read() > 20000){
-      ESC.write(max(35, speedIn));
-      returned = false;
-    }
-    else if(winchEncoder.read() > 10000){
-      ESC.write(max(50, speedIn));
-      returned = false;
-    }
+//    else if(winchEncoder.read() > 30000){
+//      ESC.write(max(20, speedIn));
+//      returned = false;
+//    }
+//    else if(winchEncoder.read() > 20000){
+//      ESC.write(max(35, speedIn));
+//      returned = false;
+//    }
+//    else if(winchEncoder.read() > 10000){
+//      ESC.write(max(40, speedIn));
+//      returned = false;
+//    }
     else if(winchEncoder.read() > 0){
-      ESC.write(max(65, speedIn));
+      ESC.write(max(40, speedIn));
       returned = false;
     }
     else if(!digitalRead(down) == false && digitalRead(up) == false){ //Slow down when A-fram lifts up
-      ESC.write(70);
+      ESC.write(40);
       returned = false;
     }
     else if(winchEncoder.read() <= (-20*3936)){ //Winch will stop if line snaps and can't engage sensors
