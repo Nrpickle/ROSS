@@ -8,8 +8,6 @@
  * Author : Nick McComb | nickmccomb.net
  
  TODOs
- 
-
  - Enable all current sensing appropriately
  - Enable current sense fault detection (is this actually desired?)
 
