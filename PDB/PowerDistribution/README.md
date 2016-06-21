@@ -2,9 +2,11 @@
 
 This board provides many features for the EBox for the ROSS project.
 
+
+
 ### Firmware Versioning
 
-This page will describe released versions of this fiwmare and any important changes made
+This page will describe released versions of this fiwmare and any important changes made. The firmware version will be bumped everytime a new version is pushed onto hardware.
 
 #### Version .3
 
