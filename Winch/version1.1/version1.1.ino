@@ -1,4 +1,4 @@
-//Version 1.2
+//Version 1.1
 #define ENCODER_OPTIMIZE_INTERRUPTS
 
 #include <Servo.h>
@@ -8,7 +8,6 @@
 //Define states
 #define checkBuffer 0
 #define controlWinch 1
-#define maintain 2
 
 //Define remote start/stop pins
 #define remoteStartPin 5
@@ -46,7 +45,6 @@ bool softStopped = false;
 bool halt = false;
 bool returned = true;
 bool dataCorrupted = false;
-bool stopReturnFast = false;
 
 void setup() {
   // put your setup code here, to run once:
@@ -78,7 +76,6 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   statusTimer.update();
-  
   if(digitalRead(up) != true) //Use LEDs for calibration
     digitalWrite(upLED, HIGH);
   else
@@ -87,7 +84,6 @@ void loop() {
     digitalWrite(downLED, HIGH);
   else
     digitalWrite(downLED, LOW);
-    
   switch(state){
     case checkBuffer:
       if(buffSize == 7)
@@ -130,19 +126,10 @@ void loop() {
         remoteStart();
       else if(header == 0xEE)
         remoteStop();
-      if(returned == true)
-        state = maintain;
-      else
-        state = checkBuffer;
-    break;
-    
-   case maintain:
-     if(!digitalRead(up) == false)
-       ESC.write(40);
-     else
-       ESC.write(90);
-     state = checkBuffer;
-   break;
+      else if(header == 0xAB)
+        calibrateESC();
+      state = checkBuffer;
+    break; 
   }
 }
 
@@ -242,11 +229,11 @@ void takeProfile(){
       ESC.write(max(40, speedIn));
       returned = false;
     }
-    else if(!digitalRead(down) == false && !digitalRead(up) == false){ //Slow down when A-fram lifts up
+    else if(!digitalRead(down) == false && digitalRead(up) == false){ //Slow down when A-fram lifts up
       ESC.write(40);
       returned = false;
     }
-    else if(winchEncoder.read() <= (-500*3936)){ //Winch will stop if line snaps and can't engage sensors
+    else if(winchEncoder.read() <= (-20*3936)){ //Winch will stop if line snaps and can't engage sensors
       ESC.write(90);
       returned = true;
   }  
