@@ -392,7 +392,8 @@ void configureSerialNumber(){
 	//Hardcoded serial number lookups (don't judge)
 	if(UC_LOT_NUMBER == 0x13E91 && UC_WAFER_ID == 0x3913)
 		serialNumber = 1;
-
+	if(UC_LOT_NUMBER == 0x13e91 && UC_WAFER_ID == 0x3337)
+		serialNumber = 2;
 	#ifdef OUTPUT_LOT_AND_WAFER_INFO
 		SendStringPC((char *)"#[Lot ID Number: ");
 		SendNumPC(UC_LOT_NUMBER);
