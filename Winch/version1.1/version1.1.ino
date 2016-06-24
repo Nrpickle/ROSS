@@ -76,14 +76,14 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   statusTimer.update();
-  if(digitalRead(up) != true) //Use LEDs for calibration
-    digitalWrite(upLED, HIGH);
-  else
-    digitalWrite(upLED, LOW);
-  if(digitalRead(down) != true)
-    digitalWrite(downLED, HIGH);
-  else
-    digitalWrite(downLED, LOW);
+//  if(digitalRead(up) != true) //Use LEDs for calibration
+//    digitalWrite(upLED, HIGH);
+//  else
+//    digitalWrite(upLED, LOW);
+//  if(digitalRead(down) != true)
+//    digitalWrite(downLED, HIGH);
+//  else
+//    digitalWrite(downLED, LOW);
   switch(state){
     case checkBuffer:
       if(buffSize == 7)
@@ -103,6 +103,7 @@ void loop() {
         else{
           ESC.write(90);
           winchEncoder.write(0);
+          returned = true;
         }
       }
       else if(header == 0xBB){//STOP:Return slower
@@ -114,6 +115,7 @@ void loop() {
         else{
           ESC.write(90);
           winchEncoder.write(0);
+          returned = true;
         }
       }
       else if(header == 0xCC){ //STOP:Halt
