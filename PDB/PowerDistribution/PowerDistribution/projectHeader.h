@@ -35,6 +35,7 @@ The first sensor used was the 36, while the 37 has a smaller range but is more p
 /*  DEBUGGING  */
 //The following are debugging options available
 
+//#define OUTPUT_LOT_AND_WAFER_INFO
 //#define PWM_DEBUGGING_OUTPUT
 //#define RSSI_DEBUGGING_OUTPUT
 //#define OUTPUT_TEMP_SENSOR_VOLTAGE
@@ -42,7 +43,7 @@ The first sensor used was the 36, while the 37 has a smaller range but is more p
 //#define BATT_VOLTAGE_RAW_OUTPUT
 //#define CURRENT_COUNT_RAW_OUTPUT
 //#define CURRENT_VOLTAGE_RAW_OUTPUT
-//#define OUTPUT_LOT_AND_WAFER_INFO
+
 
 
 //Datatype Definitions

@@ -125,7 +125,7 @@ void configureIO(void){
 	STATUS_CLR();
 	ERROR_CLR();
 	
-	REAR_RELAY_CLR();  //TODO: Change so that the relay turns on by default
+	REAR_RELAY_SET();	//Initialize the rear battery passthrough to be "ON"
 	
 	STEER_SIG_CLR();	
 }

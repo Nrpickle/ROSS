@@ -263,15 +263,15 @@ uint16_t inline getXTendRSSI(){
 //Secret sauce
 double ADCCountToVoltage(uint16_t adcCount){
   
-  //Testing and comparing voltages to corresponding count values resulted in this fun function:
-  switch(serialNumber){
+  /*switch(serialNumber){
 	  case 1:
 		return adcCount * 0.0011982182628062362 + 0.0023407572383072894; //I figure the compiler will trim off what it can't actually use...
 	  default:
 		return 1;
-  }
+  }*/
+  
+  //Testing and comparing voltages to corresponding count values resulted in this fun function:
   return adcCount * 0.0011982182628062362 + 0.0023407572383072894; //I figure the compiler will trim off what it can't actually use...
-
 	
 }
 
