@@ -7,7 +7,7 @@ struct Winch_TYPE {
   //uint8_t updated;
 } winch;
 
-//#include <Stdint.h>
+#include <Stdint.h>
 #include <Servo.h>
 #include <Encoder.h>
 #include <Timer.h>
@@ -58,6 +58,7 @@ void setup() {
 }
 
 void loop() {
+<<<<<<< HEAD
   //Testing code
   
   if(millis()<15000)
@@ -68,6 +69,31 @@ void loop() {
     changeSpeed(50, UP);
   else
     changeSpeed(0, STOP);
+=======
+  // put your main code here, to run repeatedly:
+  //if(millis() < 15000)
+  //if(winchEncoder.read() <= REV(15) //&& destReached == false){
+    if(millis()<15000)
+      changeSpeed(50, DOWN);
+    else if(millis()<20000)
+      changeSpeed(0, STOP);
+    else if(millis()<25000)    
+      changeSpeed(50, UP);
+    else
+      changeSpeed(0, STOP);
+    
+//  if(winchEncoder.read() > REV(15)){
+//    changeSpeed(100, UP);
+//    destReached = true;
+//  }
+//  if(winchEncoder.read() <= REV(0)){
+//    changeSpeed(0, STOP);
+//    winchEncoder.write(0);
+//    destReached = false;
+//  }
+//  else{
+//    changeSpeed(0, STOP);
+>>>>>>> origin/master
   
   if(!winch.newChange){
     Serial.print("[main loop]");
