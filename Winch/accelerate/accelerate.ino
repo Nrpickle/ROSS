@@ -1,4 +1,3 @@
-#include<stdint.h>
 typedef struct {
   uint8_t currentSpeed;
   uint8_t prevSpeed;
@@ -8,6 +7,14 @@ typedef struct {
   //uint8_t updated;
 } Winch;
 
+//#include <Stdint.h>
+#include <Servo.h>
+#include <Encoder.h>
+#include <Timer.h>
+
+Servo ESC; //Create ESC object
+Encoder winchEncoder(3,2); //Create encoder object
+  
 enum{
   UP,
   DOWN,
@@ -20,33 +27,38 @@ enum{
 #define RAMP_TIME 500 //Time it takes to change speed in milliseconds
 #define REV(x) 3936*x //Converts revolutions into encoder pings
 
-#include <Servo.h>
-#include <Encoder.h>
-#include <Timer.h>
-
-Servo ESC; //Create ESC object
-Encoder winchEncoder(3,2); //Create encoder object
-Winch winch;
-
 const float pi = 3.14159;
 uint64_t t0 = 0; //Beginning time for speed change
 uint8_t speedDifference = 0; //Difference between desired and current speed
 bool destReached = false;
+Winch winch; //= {
+//    .currentSpeed = 100
+//    .prevSpeed = 100
+//    .currentDir = STOP // up, down, stop
+//    .prevDir = STOP
+//    .newChange = true
+//  };
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  winch.currentSpeed = 100;
+  winch.prevSpeed = 100;
+  winch.currentDir = STOP;
+  winch.prevDir = STOP;
+  winch.newChange = true;
+  
   ESC.attach(9, MAX_REVERSE, MAX_FORWARD); //Connect ESC
   //calibrateESC();
   ESC.writeMicroseconds(NEUTRAL);
-  delay(10000);
+  delay(5000); //Allow ESC to receive neutral signalfor proper amount of time
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(millis() < 5000)
+  //if(millis() < 15000)
   //if(winchEncoder.read() <= REV(15) //&& destReached == false){
-    changeSpeed(10, UP);
+    changeSpeed(50, DOWN);
 //  if(winchEncoder.read() > REV(15)){
 //    changeSpeed(100, UP);
 //    destReached = true;
@@ -56,10 +68,10 @@ void loop() {
 //    winchEncoder.write(0);
 //    destReached = false;
 //  }
-  else{
-    changeSpeed(0,STOP);
+//  else{
+//    changeSpeed(0, STOP);
   
-  }
+  //}
   
 }
 
@@ -69,12 +81,18 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
     winch.newChange = true;
     return;
   }
-  if(newDir == UP)
+  if(newDir == UP){
     newSpeed = 100 - newSpeed;
-  else if(newDir == DOWN)
+    winch.currentDir = UP;
+  }
+  else if(newDir == DOWN){
     newSpeed = 100 + newSpeed;
-  else
+    winch.currentDir = DOWN;
+  }
+  else{
     newSpeed = 100;
+    winch.currentDir = STOP;
+  }
     
   if(winch.newChange == true){
     t0 = millis();
@@ -87,13 +105,8 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
   
   uint16_t speedToWrite = map(winch.currentSpeed, 0, 200, MAX_FORWARD, MAX_REVERSE);
   ESC.writeMicroseconds(speedToWrite); 
-}
-
-void calibrateESC(){
-  ESC.writeMicroseconds(MAX_FORWARD);
-  delay(4000);
-  ESC.writeMicroseconds(MAX_REVERSE);
-  delay(4000);
-  ESC.writeMicroseconds(NEUTRAL);
-  delay(6000);
+  //Serial.println(speedToWrite);
+  
+  if(winch.currentSpeed == newSpeed)
+    winch.prevSpeed = newSpeed;
 }
