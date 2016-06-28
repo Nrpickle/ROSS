@@ -7,7 +7,7 @@ typedef struct {
   //uint8_t updated;
 } Winch;
 
-//#include <Stdint.h>
+#include <Stdint.h>
 #include <Servo.h>
 #include <Encoder.h>
 #include <Timer.h>
@@ -58,7 +58,15 @@ void loop() {
   // put your main code here, to run repeatedly:
   //if(millis() < 15000)
   //if(winchEncoder.read() <= REV(15) //&& destReached == false){
-    changeSpeed(50, DOWN);
+    if(millis()<15000)
+      changeSpeed(50, DOWN);
+    else if(millis()<20000)
+      changeSpeed(0, STOP);
+    else if(millis()<25000)    
+      changeSpeed(50, UP);
+    else
+      changeSpeed(0, STOP);
+    
 //  if(winchEncoder.read() > REV(15)){
 //    changeSpeed(100, UP);
 //    destReached = true;
