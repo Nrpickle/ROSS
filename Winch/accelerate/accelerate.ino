@@ -1,13 +1,12 @@
+//#define DEBUG //Uncoment to print debugging information via serial
 struct Winch_TYPE {
   uint8_t currentSpeed;
   uint8_t prevSpeed;
-  uint8_t currentDir; // up, down, stop
+  uint8_t currentDir; // UP,DOWN,STOP defined in enum
   uint8_t prevDir;
   bool newChange;
-  //uint8_t updated;
 } winch;
 
-//#include <Stdint.h>
 #include <Servo.h>
 #include <Encoder.h>
 #include <Timer.h>
@@ -15,7 +14,7 @@ struct Winch_TYPE {
 Servo ESC; //Create ESC object
 Encoder winchEncoder(3,2); //Create encoder object
   
-enum{
+enum{ //Assign integer values to each direction
   UP,
   DOWN,
   STOP
@@ -24,69 +23,38 @@ enum{
 #define MAX_FORWARD 1910 //Maximum, minimum, and neutral pulse widths in microseconds
 #define NEUTRAL 1479
 #define MAX_REVERSE 1048
-//#define RAMP_TIME 500 //Time it takes to change speed in milliseconds
 #define REV(x) 3936*x //Converts revolutions into encoder pings
-#define up 14 
+#define up 14 //Hall Effect sensor indicating upright position
 
-const double RAMP_TIME = 500;
+const double RAMP_TIME = 500; //Time it takes to change speed in milliseconds
 const float pi = 3.14159;
 uint64_t t0 = 0; //Beginning time for speed change
 int16_t speedDifference = 0; //Difference between desired and current speed
 bool destReached = false;
 
-
-//= {
-//    .currentSpeed = 100
-//    .prevSpeed = 100
-//    .currentDir = STOP // up, down, stop
-//    .prevDir = STOP
-//    .newChange = true
-//  };
-
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  pinMode(13, OUTPUT);
-  winch.currentSpeed = 100;
+  #ifdef DEBUG
+    Serial.begin(9600);
+  #endif
+  winch.currentSpeed = 100; //Initialize all struct values to stationary
   winch.prevSpeed = 100;
   winch.currentDir = STOP;
   winch.prevDir = STOP;
   winch.newChange = true;
   pinMode(up, INPUT);
-  ESC.attach(9, MAX_REVERSE, MAX_FORWARD); //Connect ESC
-  //calibrateESC();
-  ESC.writeMicroseconds(NEUTRAL);
-  delay(5000); //Allow ESC to receive neutral signalfor proper amount of time
-  bool x = true;
-  for(;x == true;){ //Make sure the winch starts in the upright position
-    changeSpeed(50, UP);
-    if(millis() > 10000)
-      x = false;
-  }
-  digitalWrite(13, HIGH);
-  changeSpeed(0, STOP);
-  winchEncoder.write(0);
+  ESC.attach(9, MAX_REVERSE, MAX_FORWARD); //Connect ESC with maximum and minimum puse width values
+  ESC.writeMicroseconds(NEUTRAL); //Start the winch in neutral
+  delay(5000); //Allow ESC to receive neutral signal for proper amount of time
 }
 
 void loop() {
-  //Testing code
-  while(1); //only testing bringing up the winch
-  if(millis()<15000)
-    changeSpeed(50, DOWN);
-//  else if(millis()<20000)
-//    changeSpeed(0, STOP);
-  else if(millis()<20000)    
-    changeSpeed(50, UP);
-  else
+ //This maintains the A-Frame's upright position indefinitely
+  if(!digitalRead(up) == false)
+    changeSpeed(65, UP);
+  if(!digitalRead(up) == true)
     changeSpeed(0, STOP);
-  
-  if(!winch.newChange){
-    Serial.print("[main loop]");
-    Serial.println(winch.currentSpeed);
-  }
-  
   delay(5);
-  //Serial.println("hi!");
 }
 
 void changeSpeed(uint8_t newSpeed, uint8_t newDir){
@@ -106,20 +74,23 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
     newSpeed = 100;
     winch.currentDir = STOP;
   }
-  
-  Serial.print("[comp ");
-  Serial.print(newSpeed);
-  Serial.print(" | ");
-  Serial.print(winch.currentSpeed);
-  Serial.println("]");
+  #ifdef DEBUG
+    Serial.print("[Desired: ");
+    Serial.print(newSpeed);
+    Serial.print(" Current: ");
+    Serial.print(winch.currentSpeed);
+    Serial.println("]");
+  #endif
   
 
-  //Check if no change is needed (if we are going the speed we want)
-  if(newDir == winch.currentDir && newSpeed == winch.currentSpeed){  //If the command is to continue moving the same speed...
+  //Check if no change is needed (if we are going the desired speed and direction)
+  if(newDir == winch.currentDir && newSpeed == winch.currentSpeed){  //If the command is to continue moving the same speed and direction...
     winch.prevSpeed = winch.currentSpeed;
-    winch.newChange = true;
-    Serial.println("[REACHED END CASE]");
-    return;   //We want to return
+    winch.newChange = true; //Next time we write a new speed we know it will be at t0, the beginning of a speed change
+    #ifdef DEBUG
+      Serial.println("[REACHED END CASE]");
+    #endif
+    return;   //...return without altering speed
   }
 
 
@@ -134,24 +105,18 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
     else if (speedDifference > 0)
       speedDifference += 1;
     
-    winch.newChange = false;
+    winch.newChange = false; //We are in the process of changing speed so the next time the function is called we know not to reset t0
   }
    
   uint64_t deltaT = millis() - t0;
-  winch.currentSpeed = (double)winch.prevSpeed + (double)speedDifference*.5*(1-cos((pi*(double)deltaT)/RAMP_TIME));
+  winch.currentSpeed = (double)winch.prevSpeed + (double)speedDifference*.5*(1-cos((pi*(double)deltaT)/RAMP_TIME)); //Accelerate in a sinusoidal intensity
   
-  /*
-  if(!winch.newChange){
-    Serial.print("[changeSpeed]");
-    Serial.println(speedDifference);
-  }
-  */
-  constrain(winch.currentSpeed, 0, 200);
-  uint16_t speedToWrite = map(winch.currentSpeed, 0, 200, MAX_REVERSE, MAX_FORWARD);
-  ESC.writeMicroseconds(speedToWrite); 
-  
-  Serial.println(speedToWrite);
-  
+  constrain(winch.currentSpeed, 0, 200); //Do not write above or below the maximum pulse widths
+  uint16_t speedToWrite = map(winch.currentSpeed, 0, 200, MAX_REVERSE, MAX_FORWARD); //Convert from sinusoid magnitude to pulse width
+  ESC.writeMicroseconds(speedToWrite); //Write the scaled value
+  #ifdef DEBUG
+    Serial.println(speedToWrite);
+  #endif 
   if(winch.currentSpeed == newSpeed)
-    winch.prevSpeed = newSpeed;
+    winch.prevSpeed = newSpeed; //Set the starting point for the next speed change
 }
