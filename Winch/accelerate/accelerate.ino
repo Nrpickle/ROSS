@@ -57,8 +57,12 @@ void setup() {
   //calibrateESC();
   ESC.writeMicroseconds(NEUTRAL);
   delay(5000); //Allow ESC to receive neutral signalfor proper amount of time
-  while(digitalRead(up) == true) //Make sure the winch starts in the upright position
+  bool x = true;
+  for(;x == true;){ //Make sure the winch starts in the upright position
     changeSpeed(50, UP);
+    if(millis() > 10000)
+      x = false;
+  }
   digitalWrite(13, HIGH);
   changeSpeed(0, STOP);
   winchEncoder.write(0);
