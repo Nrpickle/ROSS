@@ -61,11 +61,11 @@ void loop() {
   //Testing code
   
   if(millis()<15000)
-    changeSpeed(50, DOWN);
+    changeSpeed(75, DOWN);
   else if(millis()<20000)
     changeSpeed(0, STOP);
   else if(millis()<25000)    
-    changeSpeed(50, UP);
+    changeSpeed(75, UP);
   else
     changeSpeed(0, STOP);
   
@@ -135,7 +135,7 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
     Serial.println(speedDifference);
   }
   */
-  
+  constrain(winch.currentSpeed, 0, 200);
   uint16_t speedToWrite = map(winch.currentSpeed, 0, 200, MAX_REVERSE, MAX_FORWARD);
   ESC.writeMicroseconds(speedToWrite); 
   
