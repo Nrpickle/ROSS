@@ -19,9 +19,9 @@ boolean usingInterrupt = false; //Set to true to use interrupt
 #define stopLED 3
 #define LEDRing 6
 
-#define LEDRing 6
 Adafruit_NeoPixel ring = Adafruit_NeoPixel(12, LEDRing, NEO_GRB + NEO_KHZ800);
-uint32_t colorVal = ring.Color(0,127,0); //Initialize the ring to half brightness green
+//uint32_t colorVal = ring.Color(0,127,0); //Initialize the ring to half brightness green
+uint32_t colorVal = ring.Color(0,0,0); //Initialize the ring to off
 int color = 0;
 int pattern = 0;
 int brightness = 0;
@@ -93,7 +93,7 @@ void setup() {
   Serial.println("\r\nUltimate GPSlogger Shield");
   ring.begin();
   ring.show();
-  solid(colorVal);
+  //solid(colorVal);
   pinMode(ledPin, OUTPUT);
 
   pinMode(10, OUTPUT); //Default chip select
