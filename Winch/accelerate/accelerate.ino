@@ -30,7 +30,7 @@ enum{
 const double RAMP_TIME = 500;
 const float pi = 3.14159;
 uint64_t t0 = 0; //Beginning time for speed change
-uint8_t speedDifference = 0; //Difference between desired and current speed
+int16_t speedDifference = 0; //Difference between desired and current speed
 bool destReached = false;
 
 
