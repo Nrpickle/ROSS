@@ -1,5 +1,6 @@
-#define reedPin 1
-#define ledPin 13
+#define reedPin 11
+#define reedPin2 14
+#define NEUTRAL 1479
 
 #include <Servo.h>
 
@@ -8,22 +9,19 @@ Servo ESC;
 void setup() {
   // put your setup code here, to run once:
   pinMode(reedPin, INPUT);
-  pinMode(ledPin, OUTPUT);
-  ESC.attach(9);
-  ESC.write(180);
-  delay(4000);
-  ESC.write(0);
-  delay(4000);
-  ESC.write(90);
-  delay(6000);
+  pinMode(reedPin2, INPUT);
+  pinMode(13, OUTPUT);
+ 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   if (digitalRead(reedPin) == LOW){
-     ESC.write(90);
+     digitalWrite(13, HIGH);
   }
-  if (digitalRead(reedPin) == HIGH){
-     ESC.write(110);
+  else if (digitalRead(reedPin2) == LOW){
+     digitalWrite(13, HIGH);
   }
+  else
+    digitalWrite(13, LOW);
 }
