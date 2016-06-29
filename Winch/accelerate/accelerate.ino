@@ -26,6 +26,7 @@ enum{
 #define MAX_REVERSE 1048
 //#define RAMP_TIME 500 //Time it takes to change speed in milliseconds
 #define REV(x) 3936*x //Converts revolutions into encoder pings
+#define up 14 
 
 const double RAMP_TIME = 500;
 const float pi = 3.14159;
@@ -45,27 +46,33 @@ bool destReached = false;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(13, OUTPUT);
   winch.currentSpeed = 100;
   winch.prevSpeed = 100;
   winch.currentDir = STOP;
   winch.prevDir = STOP;
   winch.newChange = true;
-  
+  pinMode(up, INPUT);
   ESC.attach(9, MAX_REVERSE, MAX_FORWARD); //Connect ESC
   //calibrateESC();
   ESC.writeMicroseconds(NEUTRAL);
   delay(5000); //Allow ESC to receive neutral signalfor proper amount of time
+  while(digitalRead(up) == true) //Make sure the winch starts in the upright position
+    changeSpeed(50, UP);
+  digitalWrite(13, HIGH);
+  changeSpeed(0, STOP);
+  winchEncoder.write(0);
 }
 
 void loop() {
   //Testing code
-  
+  while(1); //only testing bringing up the winch
   if(millis()<15000)
-    changeSpeed(75, DOWN);
-  else if(millis()<20000)
-    changeSpeed(0, STOP);
-  else if(millis()<25000)    
-    changeSpeed(75, UP);
+    changeSpeed(50, DOWN);
+//  else if(millis()<20000)
+//    changeSpeed(0, STOP);
+  else if(millis()<20000)    
+    changeSpeed(50, UP);
   else
     changeSpeed(0, STOP);
   
