@@ -56,8 +56,9 @@ for x in parameters:
 	ser.write(x)
 	sleep(0.1)
 
-ser.close()
-closeCheck()
-
+#ser.close()
+#closeCheck()
+while(1):
+	print(ser.readline())
 	
 	
