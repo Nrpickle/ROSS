@@ -179,11 +179,11 @@ inline void takeProfile(){
       changeSpeed(40, DOWN);
       returned = false;
     }
-    if(!digitalRead(down) == true && winchEncoder.read() < REV(depth)){//Increase to full speed once the A-frame has decended fully
+    if(!digitalRead(down) == true && winchEncoder.read() < depth){//Increase to full speed once the A-frame has decended fully
       changeSpeed(speedOut, DOWN);
       returned = false;
     }
-    if(winchEncoder.read() >= REV(depth)){
+    if(winchEncoder.read() >= depth){
       changeSpeed(0, STOP);
       returned = false;
       depthReached = true;//Next time the function is called the winch will start taking line in
