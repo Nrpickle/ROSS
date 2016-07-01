@@ -1,5 +1,5 @@
 //Winch control version 2.0
-#define DEBUG //Uncoment to print debugging information via serial
+//#define DEBUG //Uncoment to print debugging information via serial
 struct Winch_TYPE {
   uint8_t currentSpeed;
   uint8_t prevSpeed;
@@ -36,7 +36,7 @@ enum{  //Assign integer values to each state
 #define REV(x) 3936*x //Converts revolutions into encoder pings
 
 //Speed constants
-#define SLOW_DIST 5 //Distance in revolutions from full upright to begin changing winch speed in
+#define SLOW_DIST 2 //Distance in revolutions from full upright to begin changing winch speed in
 #define LIFT_SPEED 65 //Speed for lifting the A-frame when maintaining or returning after a profile
 #define FAST_IN_SPEED 65 //Speed for returning fast AND maintaining
 #define SLOW_IN_SPEED 55 //Speed for returning slow AND maintaining
@@ -400,7 +400,6 @@ void takeProfile(){
       changeSpeed(0, STOP);
       depthReached = true;
       returned = false;
-      delay(3000);//Delay half a second to reduce mechanical stress
     }
   }
   else if(depthReached == true && halt == false){
