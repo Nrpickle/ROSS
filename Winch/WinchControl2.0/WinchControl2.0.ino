@@ -5,7 +5,8 @@ struct Winch_TYPE {
   uint8_t prevSpeed;
   uint8_t currentDir; // UP,DOWN,STOP defined in enum
   uint8_t prevDir;
-  bool newChange;
+  uint8_t prevDesiredDir;
+  uint8_t prevDesiredSpeed;
 } winch;
 
 #include <Servo.h>
@@ -85,7 +86,8 @@ void setup() {
   winch.prevSpeed = 100;
   winch.currentDir = STOP;
   winch.prevDir = STOP;
-  winch.newChange = true;
+  winch.prevDesiredDir = STOP;
+  winch.prevDesiredSpeed = 0;
   //Set pin modes
   pinMode(remoteStartPin, OUTPUT);
   pinMode(remoteStopPin, OUTPUT);
@@ -242,7 +244,8 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
   //Check if no change is needed (if we are going the desired speed and direction)
   if(newDir == winch.currentDir && newSpeed == winch.currentSpeed){  //If the command is to continue moving the same speed and direction...
     winch.prevSpeed = winch.currentSpeed;
-    winch.newChange = true; //Next time we write a new speed we know it will be at t0, the beginning of a speed change
+    winch.prevDesiredSpeed = newSpeed; //Next time we write a new speed we know it will be at t0, the beginning of a speed change
+    winch.prevDesiredDir = newDir;
     #ifdef DEBUG
       Serial1.println("[REACHED END CASE]");
     #endif
@@ -251,7 +254,7 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
 
 
   //This will catch if we have gotten to this spot while the previous call to the function was "no change requested"
-  if(winch.newChange == true){
+  if(winch.prevDesiredSpeed != newSpeed && winch.prevDesiredDir != newDir){
     //If that's the case, then we want to initialize the acceleration
     t0 = millis();
     speedDifference = newSpeed - winch.prevSpeed;
@@ -260,13 +263,10 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
       speedDifference -= 1;
     else if (speedDifference > 0)
       speedDifference += 1;
-    
-    winch.newChange = false; //We are in the process of changing speed so the next time the function is called we know not to reset t0
   }
    
   uint64_t deltaT = millis() - t0;
-  winch.currentSpeed = (double)winch.prevSpeed + (double)speedDifference*.5*(1-cos((pi*(double)deltaT)/RAMP_TIME)); //Accelerate in a sinusoidal intensity
-  
+  winch.currentSpeed = (double)winch.prevSpeed + (double)speedDifference*.5*(1-cos((pi*(double)deltaT)/RAMP_TIME)); //Accelerate sinusoidally
   constrain(winch.currentSpeed, 0, 200); //Do not write above or below the maximum pulse widths
   uint16_t speedToWrite = map(winch.currentSpeed, 0, 200, MAX_REVERSE, MAX_FORWARD); //Convert from sinusoid magnitude to pulse width
   ESC.writeMicroseconds(speedToWrite); //Write the scaled value
@@ -282,6 +282,9 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
     winch.currentDir = UP;
   else if(winch.currentSpeed == 100)
     winch.currentDir = STOP;
+    
+  winch.prevDesiredSpeed = newSpeed; //Next time we write a new speed we know it will be at t0, the beginning of a speed change
+  winch.prevDesiredDir = newDir;
 }
 
 void serialEvent1(){
