@@ -48,9 +48,9 @@ enum{  //Assign integer values to each state
 #define remoteStopLED 8
 #define startTime 750 //How long remote start is held HIGH in milliseconds
 //Define sensor pins
-#define down 11//Hall Effect sensor indicating lowered position
+#define down 10//Hall Effect sensor indicating lowered position
 #define downLED 13
-#define up 10 //Hall Effect sensor indicating upright position
+#define up 11 //Hall Effect sensor indicating upright position
 #define upLED 15
 
 const double RAMP_TIME = 500; //Time it takes to change speed in milliseconds
