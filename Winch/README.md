@@ -1,2 +1,2 @@
 ###Versioning
-The most up to date version is "version 1.2"
+The most up to date version is "version 2.0"
