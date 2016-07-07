@@ -1,4 +1,4 @@
-//Winch control version 2.0
+//Winch control version 2.1
 //#define DEBUG //Uncoment to print debugging information via serial
 struct Winch_TYPE {
   uint8_t currentSpeed;
