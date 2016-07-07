@@ -11,7 +11,7 @@ def closeCheck():
 		closeCheck()
 		
 ser = serial.Serial(
-    port='COM7',\
+    port='COM15',\
     baudrate=57600,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
@@ -43,10 +43,10 @@ elif stop == 4:
 		parameters[x] = 0xCC	
 elif stop == 8:
 	for x in range(len(parameters)):
-		parameters[x] = 0xDD
+		parameters[x] = 0xDD #remote start
 elif stop == 16:
 	for x in range(len(parameters)):
-		parameters[x] = 0xEE
+		parameters[x] = 0xEE #remote stop
 
 print parameters
 
