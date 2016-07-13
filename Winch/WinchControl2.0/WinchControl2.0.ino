@@ -37,8 +37,8 @@ enum{  //Assign integer values to each state
 
 //Speed constants
 #define SLOW_DIST 2 //Distance in revolutions from full upright to begin changing winch speed in
-#define LIFT_SPEED 65 //Speed for lifting the A-frame when maintaining or returning after a profile
-#define FAST_IN_SPEED 65 //Speed for returning fast AND maintaining
+#define LIFT_SPEED 75 //Speed for lifting the A-frame when maintaining or returning after a profile
+#define FAST_IN_SPEED 75 //Speed for returning fast AND maintaining
 #define SLOW_IN_SPEED 55 //Speed for returning slow AND maintaining
 
 //Define remote start/stop pins
@@ -61,7 +61,7 @@ int parameters[7];
 int incomingByte = 0;
 
 int state = CHECK_BUFFER;
-int header;
+int header = 0; //Initialize to zero to ensure nothing happens until packet received
 int upperByte;
 int lowerByte;
 int checksum;
@@ -70,7 +70,7 @@ int speedOut;
 int speedIn;
 long long depth;
 bool motorRunning = false;
-bool depthReached = false;
+bool depthReached = true;
 bool halt = false;
 bool returned = true;
 bool dataCorrupted = false;
@@ -129,24 +129,24 @@ void loop() {
        }
          
        if(header == 0xAA){//STOP:Return at full speed
-         changeSpeed(0, STOP);
          depthReached = true;
          if(!digitalRead(up) == false) //Return the winch to its upright position and maintian
            changeSpeed(FAST_IN_SPEED, UP);
          if(!digitalRead(up) == true){
            changeSpeed(0, STOP);
            winchEncoder.write(0);
+           returned = true;
          }
        }
        
        if(header == 0xBB){//STOP:Return slower
-         changeSpeed(0, STOP);
          depthReached = true;
          if(!digitalRead(up) == false) //Return the winch to its upright position and maintian
            changeSpeed(SLOW_IN_SPEED, UP);
          if(!digitalRead(up) == true){
            changeSpeed(0, STOP);
            winchEncoder.write(0);
+           returned = true;
          }
        }
        
@@ -157,8 +157,8 @@ void loop() {
        if(header == 255)//Take a profile - normal operation
          takeProfile();
          
-       if(returned == true)
-         state = MAINTAIN;
+       if(returned == true) //If we aren't in the middle of a profile
+         state = MAINTAIN; //Maintain position before checking buffer
        else
        state = CHECK_BUFFER;
      break;
@@ -169,68 +169,26 @@ void loop() {
      else{
        changeSpeed(0, STOP);
        winchEncoder.write(0);
+       returned = true;
      }
      state = CHECK_BUFFER;
    break;
    }
 }
 
-//inline void takeProfile(){
-//  if(depthReached == false){
-//    if(!digitalRead(down) == false){//Slowly let A-frame down from upright position
-//      changeSpeed(40, DOWN);
-//      returned = false;
-//    }
-//    if(!digitalRead(down) == true && winchEncoder.read() < depth){//Increase to full speed once the A-frame has decended fully
-//      changeSpeed(speedOut, DOWN);
-//      returned = false;
-//    }
-//    if(winchEncoder.read() >= depth){
-//      changeSpeed(0, STOP);
-//      returned = false;
-//      depthReached = true;//Next time the function is called the winch will start taking line in
-//      delay(500);//Delay half a second to reduce mechanical stress
-//    }
-//  }
-//  
-//  if(depthReached == true && halt == false){
-//    if(!digitalRead(up) == true){ //Stop when A-frame is in full upright position
-//      changeSpeed(0, STOP);
-//      winchEncoder.write(0); //Account for line stretching - reset after each cast
-//      returned = true;
-//    }
-//    if(!digitalRead(up) == false && winchEncoder.read() > REV(SLOW_DIST)){
-//      changeSpeed(speedIn, UP);
-//      returned = false;
-//    }
-//    if(!digitalRead(up) == false && (!digitalRead(down) == false || winchEncoder.read() < REV(SLOW_DIST))){ //Change speed when within specified number of revolutions
-//      //Will change speed even if encoder does not work
-//      changeSpeed(LIFT_SPEED, UP); //Slow if coming in too fast or speed up if too slow to lift A-frame
-//      returned = false;
-//    }
-//    if(winchEncoder.read() <= -1*REV(500)){ //Winch will stop if line snaps and can't engage sensors
-//      changeSpeed(0, STOP);
-//      returned = true;
-//    }  
-//  }
-//}
-
 void changeSpeed(uint8_t newSpeed, uint8_t newDir){
 
   //If we want to go UP
   if(newDir == UP){
     newSpeed = 100 - newSpeed;
-    //winch.currentDir = UP;
   }
   //If we want to go down
   else if(newDir == DOWN){
     newSpeed = 100 + newSpeed;
-    //winch.currentDir = DOWN;
   }
   //Else we want to STOP
   else{
     newSpeed = 100;
-    //winch.currentDir = STOP;
   }
   #ifdef DEBUG
     Serial1.print("[Desired: ");
@@ -301,7 +259,7 @@ void updateParameters(){
   upperByte = parameters[3];
   lowerByte = parameters[4];
   checksum = parameters[5];
-  buffSize = 0; //Reset buffer size and control variables
+  buffSize = 0; //Reset buffer size and control variables 
   depthReached = false;
   halt = false;
   if(checksum == (((speedOut ^ speedIn) ^ upperByte) ^ lowerByte)){
@@ -371,27 +329,11 @@ inline void remoteStop(){
 
 void takeProfile(){
    if(depthReached == false){
-     //Can't use switches with current version of Aux Board
-    if(!digitalRead(down) == false){//Slowly let A-frame down from upright position
+     if(!digitalRead(down) == false){//Slowly let A-frame down from upright position
       changeSpeed(30, DOWN);
       returned = false;
     }
-//    else if(winchEncoder.read() < (depth - 40000)){ //Increase to full speed once A-fram is down
-//      ESC.write(speedOut);
-//      returned = false;
-//    }
-//    else if(winchEncoder.read() < (depth - 30000)){ //Reduce speed as sensor nears destination
-//      ESC.write(min(160, speedOut));
-//      returned = false;
-//    }
-//    else if(winchEncoder.read() < (depth - 20000)){
-//      ESC.write(min(145, speedOut));
-//      returned = false;
-//    }
-//    else if(winchEncoder.read() < (depth - 10000)){
-//      ESC.write(min(130, speedOut));
-//      returned = false;
-    //}
+
     else if((winchEncoder.read() < depth)){
       changeSpeed(speedOut, DOWN);
       returned = false;
@@ -407,6 +349,7 @@ void takeProfile(){
       changeSpeed(0, STOP);
       winchEncoder.write(0); //Account for line stretching - reset after each cast
       returned = true;
+      header = 0;
     }
     else if(winchEncoder.read() > 20000){ //change back to else if
       changeSpeed(speedIn, UP);
@@ -423,6 +366,7 @@ void takeProfile(){
     else if(winchEncoder.read() <= (-500*3936)){ //Winch will stop if line snaps and can't engage sensors
       changeSpeed(0, STOP);
       returned = true;
+      header = 0;
     }  
   }
 }
