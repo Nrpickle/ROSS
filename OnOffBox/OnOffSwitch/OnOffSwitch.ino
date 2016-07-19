@@ -14,14 +14,14 @@ Adafruit_GPS GPS(&mySerial);
 boolean usingInterrupt = false; //Set to true to use interrupt
 
 #define startPin 4//Goes high upon button push. NC switch connects to GND. Pulled up internally.
-#define startLED 5 //Illuminates when start button is pushed
+#define startLED 5 //Pulses when start button is pushed
 #define stopPin 2
 #define stopLED 3
 #define LEDRing 6
 
 Adafruit_NeoPixel ring = Adafruit_NeoPixel(12, LEDRing, NEO_GRB + NEO_KHZ800);
-//uint32_t colorVal = ring.Color(0,127,0); //Initialize the ring to half brightness green
-uint32_t colorVal = ring.Color(0,0,0); //Initialize the ring to off
+uint32_t colorVal = ring.Color(0,127,0); //Initialize the ring to half brightness green
+//uint32_t colorVal = ring.Color(0,0,0); //Initialize the ring to off
 int color = 0;
 int pattern = 0;
 int brightness = 0;
@@ -93,7 +93,7 @@ void setup() {
   Serial.println("\r\nUltimate GPSlogger Shield");
   ring.begin();
   ring.show();
-  //solid(colorVal);
+  solid(colorVal); //Initialize as colorVal's default (set at top)
   pinMode(ledPin, OUTPUT);
 
   pinMode(10, OUTPUT); //Default chip select
