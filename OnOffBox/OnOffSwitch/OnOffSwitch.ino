@@ -11,7 +11,7 @@ Adafruit_GPS GPS(&mySerial);
 #define GPSECHO  false //Set to true if you want to echo to serial monitor
 #define LOG_FIXONLY false //Set to true if you only want to log when GPS is locked
 
-boolean usingInterrupt = false; //Set to true to use interrupt
+boolean usingInterrupt = false; //Set to true to use interrupt.3.
 
 #define startPin 4//Goes high upon button push. NC switch connects to GND. Pulled up internally.
 #define startLED 5 //Pulses when start button is pushed
