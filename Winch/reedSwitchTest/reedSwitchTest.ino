@@ -1,5 +1,5 @@
 #define reedPin 11
-#define reedPin2 14
+#define reedPin2 10
 #define NEUTRAL 1479
 
 #include <Servo.h>
