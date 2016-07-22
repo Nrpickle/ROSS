@@ -1,12 +1,12 @@
 #include <SPI.h>
-#include <Adafruit_GPS.h>
+//#include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
 #include <SD.h>
 #include <avr/sleep.h>
 #include <Adafruit_NeoPixel.h>
 
 SoftwareSerial mySerial(8, 7);
-Adafruit_GPS GPS(&mySerial);
+//Adafruit_GPS GPS(&mySerial);
 
 #define GPSECHO  false //Set to true if you want to echo to serial monitor
 #define LOG_FIXONLY false //Set to true if you only want to log when GPS is locked
@@ -20,11 +20,11 @@ boolean usingInterrupt = false; //Set to true to use interrupt.3.
 #define LEDRing 6
 
 Adafruit_NeoPixel ring = Adafruit_NeoPixel(12, LEDRing, NEO_GRB + NEO_KHZ800);
-uint32_t colorVal = ring.Color(0,127,0); //Initialize the ring to half brightness green
+uint32_t colorVal = ring.Color(0, 127, 0); //Initialize the ring to half brightness green
 //uint32_t colorVal = ring.Color(0,0,0); //Initialize the ring to off
-int color = 0;
-int pattern = 0;
-int brightness = 0;
+uint8_t color = 0;
+uint8_t pattern = 0;
+uint8_t brightness = 0;
 unsigned long previousBlinkTime = 0;
 unsigned long currentBlinkTime = 0;
 unsigned long previousPulseTime = 0;
@@ -37,8 +37,8 @@ unsigned long currentGreenButtonTime = 0;
 #define blinkTime 500 //How frequently the ring will blink in milliseconds
 #define pulseTime 2
 int i = 0;
-float per = 90;
-float freq = 1.0/per;
+#define PER 90
+float freq = 1.0 / PER;
 bool buttonPulseRed = false;
 bool buttonPulseGreen = false;
 bool on = false;
@@ -53,7 +53,7 @@ int pulseSpeed = 2; //Default pulse speed. Can be altered via serial.
 
 File logfile;
 
-uint8_t parseHex(char c) { //Translate from hexadecimal to decimal 
+uint8_t parseHex(char c) { //Translate from hexadecimal to decimal
   if (c < '0')
     return 0;
   if (c <= '9')
@@ -61,35 +61,35 @@ uint8_t parseHex(char c) { //Translate from hexadecimal to decimal
   if (c < 'A')
     return 0;
   if (c <= 'F')
-    return (c - 'A')+10;
+    return (c - 'A') + 10;
 }
 
 // blink error code
 void error(uint8_t errno) {
-  /*
-  if (SD.errorCode()) {
-   putstring("SD error: ");
-   Serial.print(card.errorCode(), HEX);
-   Serial.print(',');
-   Serial.println(card.errorData(), HEX);
-   }
-   */
-  while(1) {
+
+  //  if (SD.errorCode()) {
+  //   putstring("SD error: ");
+  //   Serial.print(card.errorCode(), HEX);
+  //   Serial.print(',');
+  //   Serial.println(card.errorData(), HEX);
+  //   }
+
+  while (1) {
     uint8_t i;
-    for (i=0; i<errno; i++) {
+    for (i = 0; i < errno; i++) {
       digitalWrite(ledPin, HIGH);
       delay(100);
       digitalWrite(ledPin, LOW);
       delay(100);
     }
-    for (i=errno; i<10; i++) {
+    for (i = errno; i < 10; i++) {
       delay(200);
     }
   }
 }
 
 void setup() {
-  Serial.begin(9600); //Increase to 115200 baud rate if echoing to serial monitor 
+  Serial.begin(9600); //Increase to 115200 baud rate if echoing to serial monitor
   Serial.println("\r\nUltimate GPSlogger Shield");
   ring.begin();
   ring.show();
@@ -113,8 +113,8 @@ void setup() {
   char filename[15];
   strcpy(filename, "GPSLOG00.TXT");
   for (uint8_t i = 0; i < 100; i++) {
-    filename[6] = '0' + i/10;
-    filename[7] = '0' + i%10;
+    filename[6] = '0' + i / 10;
+    filename[7] = '0' + i % 10;
     // create if does not exist, do not open existing, write, sync after write
     if (! SD.exists(filename)) {
       break;
@@ -122,24 +122,26 @@ void setup() {
   }
 
   logfile = SD.open(filename, FILE_WRITE);
-  if( ! logfile ) {
-    Serial.print("Couldnt create "); 
+  if ( ! logfile ) {
+    Serial.print("Couldnt create ");
     Serial.println(filename);
+    Serial.print("Ram FREE: ");
+    Serial.println(freeRam());
     error(3);
   }
-  Serial.print("Writing to "); 
+  Serial.print("Writing to ");
   Serial.println(filename);
 
   // connect to the GPS at the desired rate
-  GPS.begin(9600);
+  //GPS.begin(9600);
 
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); //RCM and GGA
+  //GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); //RCM and GGA
 
   // Set the update rate
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);  //100 millihertz (once every 10 seconds), 1Hz or 5Hz update rate
+  //GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);  //100 millihertz (once every 10 seconds), 1Hz or 5Hz update rate
 
   // Turn off updates on antenna status, if the firmware permits it
-  GPS.sendCommand(PGCMD_NOANTENNA);
+  //GPS.sendCommand(PGCMD_NOANTENNA);
 
   useInterrupt(true);
 
@@ -149,14 +151,14 @@ void setup() {
 
 // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
 SIGNAL(TIMER0_COMPA_vect) {
-  char c = GPS.read();
+  //uint8_t c = GPS.read();
   // if you want to debug, this is a good time to do it!
-  #ifdef UDR0
-      if (GPSECHO)
-        if (c) UDR0 = c;  
-      // writing direct to UDR0 is much much faster than Serial.print 
-      // but only one character can be written at a time. 
-  #endif
+#ifdef UDR0
+//  if (GPSECHO)
+//    if (c) UDR0 = c;
+  // writing direct to UDR0 is much much faster than Serial.print
+  // but only one character can be written at a time.
+#endif
 }
 
 void useInterrupt(boolean v) {
@@ -166,7 +168,7 @@ void useInterrupt(boolean v) {
     OCR0A = 0xAF;
     TIMSK0 |= _BV(OCIE0A);
     usingInterrupt = true;
-  } 
+  }
   else {
     // do not call the interrupt function COMPA anymore
     TIMSK0 &= ~_BV(OCIE0A);
@@ -175,92 +177,89 @@ void useInterrupt(boolean v) {
 }
 
 void loop() {
-  currentBlinkTime = millis();
-  currentPulseTime = millis();
-  currentGreenButtonTime = millis();
-  currentRedButtonTime = millis();
-  if(pattern == 2){
-    if(currentBlinkTime - previousBlinkTime >= blinkTime){
+  currentBlinkTime = currentPulseTime = currentGreenButtonTime = currentRedButtonTime = millis();
+  if (pattern == 2) {
+    if (currentBlinkTime - previousBlinkTime >= blinkTime) {
       LEDblink();
       previousBlinkTime = currentBlinkTime;
     }
   }
-  else if(pattern == 3){
-    if(currentPulseTime - previousPulseTime >= pulseTime){
+  else if (pattern == 3) {
+    if (currentPulseTime - previousPulseTime >= pulseTime) {
       LEDpulse();
       previousPulseTime = currentPulseTime;
     }
   }
-  if(digitalRead(startPin) == HIGH){
+  if (digitalRead(startPin) == HIGH) {
     Serial.write(10);
     buttonPulseGreen = true;
   }
 
-  if(buttonPulseGreen == true){
-    if(currentGreenButtonTime - previousGreenButtonTime >= buttonPulseTime){ 
+  if (buttonPulseGreen == true) {
+    if (currentGreenButtonTime - previousGreenButtonTime >= buttonPulseTime) {
       pulseLED(startLED);
       previousGreenButtonTime = currentGreenButtonTime;
     }
   }
-  
-  if(digitalRead(stopPin) == HIGH){
+
+  if (digitalRead(stopPin) == HIGH) {
     Serial.write(20);
     buttonPulseRed = true;
   }
-  
-  if(buttonPulseRed == true){
-    if(currentRedButtonTime - previousRedButtonTime >= buttonPulseTime){
+
+  if (buttonPulseRed == true) {
+    if (currentRedButtonTime - previousRedButtonTime >= buttonPulseTime) {
       pulseLED(stopLED);
       previousRedButtonTime = currentRedButtonTime;
     }
   }
   if (! usingInterrupt) {
     // read data from the GPS in the 'main loop'
-    char c = GPS.read();
+    //uint8_t c = GPS.read();
     // if you want to debug, this is a good time to do it!
-    if (GPSECHO)
-      if (c) Serial.print(c);
+    //    if (GPSECHO)
+    //      if (c) Serial.print(c);
   }
-  
+
   // if a sentence is received, we can check the checksum, parse it...
-  if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences! 
-    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
-    
-    // Don't call lastNMEA more than once between parse calls!  Calling lastNMEA 
-    // will clear the received flag and can cause very subtle race conditions if
-    // new data comes in before parse is called again.
-    char *stringptr = GPS.lastNMEA();
-    
-    if (!GPS.parse(stringptr))   // this also sets the newNMEAreceived() flag to false
-      return;  // Wait for a new sentence if fail to parse
+  //  if (GPS.newNMEAreceived()) {
+  //    // a tricky thing here is if we print the NMEA sentence, or data
+  //    // we end up not listening and catching other sentences!
+  //    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
+  //
+  //    // Don't call lastNMEA more than once between parse calls!  Calling lastNMEA
+  //    // will clear the received flag and can cause very subtle race conditions if
+  //    // new data comes in before parse is called again.
+  //    char *stringptr = GPS.lastNMEA();
+  //
+  //    if (!GPS.parse(stringptr))   // this also sets the newNMEAreceived() flag to false
+  //      return;  // Wait for a new sentence if fail to parse
+  //
+  //    // Sentence successfully parsed
+  //    Serial.println("OK");
+  //    if (LOG_FIXONLY && !GPS.fix) {
+  //      Serial.print("No Fix");
+  //      return;
+  //    }
 
-    // Sentence successfully parsed 
-    Serial.println("OK");
-    if (LOG_FIXONLY && !GPS.fix) {
-      Serial.print("No Fix");
-      return;
-    }
+  //Log parsed data
+  Serial.println("Log");
 
-    //Log parsed data
-    Serial.println("Log");
+//  uint8_t stringsize = strlen(stringptr);
+//  if (stringsize != logfile.write((uint8_t *)stringptr, stringsize))    //write the string to the SD file
+//    error(4);
+//  if (strstr(stringptr, "RMC") || strstr(stringptr, "GGA"))   logfile.flush();
+//  Serial.println();
 
-    uint8_t stringsize = strlen(stringptr);
-    if (stringsize != logfile.write((uint8_t *)stringptr, stringsize))    //write the string to the SD file
-        error(4);
-    if (strstr(stringptr, "RMC") || strstr(stringptr, "GGA"))   logfile.flush();
-    Serial.println();
-  }
 }
 
-void pulseLED(int led){
-  if(i < (2*per+2)){
-    int brightness = 127.0*sin(freq*2*PI*i)+127;
+void pulseLED(int led) {
+  if (i < (2 * PER + 2)) {
+    uint8_t brightness = 127.0 * sin(freq * 2 * PI * i) + 127;
     analogWrite(led, brightness);
     i++;
   }
-  else{
+  else {
     analogWrite(led, 127);
     i = 0;
     buttonPulseGreen = false;
@@ -268,89 +267,89 @@ void pulseLED(int led){
   }
 }
 
-void serialEvent(){
-  int val = Serial.read();
-  if(val == 33)
+void serialEvent() {
+  uint8_t val = Serial.read();
+  if (val == 33)
     color = 1; //red
-  else if(val == 34)
+  else if (val == 34)
     color = 2; //green
-  else if(val == 35)
+  else if (val == 35)
     color = 3; //blue
-  else if(val == 36)
+  else if (val == 36)
     color = 4; //yellow
-  else if(val == 41)
+  else if (val == 41)
     pattern = 1; //solid
-  else if(val == 42)
+  else if (val == 42)
     pattern = 2; //blink
-  else if(val == 43)
+  else if (val == 43)
     pattern = 3; //pulse
-  else if(val == 51)
+  else if (val == 51)
     brightness = 0;
-  else if(val == 52)
+  else if (val == 52)
     brightness = 1;
-  else if(val == 53)
+  else if (val == 53)
     brightness = 2;
-  else if(val == 61)
+  else if (val == 61)
     pulseSpeed = 1;
-  else if(val == 62)
+  else if (val == 62)
     pulseSpeed = 2;
-  
+
   //Multiply value by brightness/2 to set intensity to
   //0 , 1/2 , or 1 [Brightness value can be 0, 1, or 2]
-  if(color == 1)
-    colorVal = ring.Color(brightness*255/2, 0, 0); 
-  else if(color == 2)
-    colorVal = ring.Color(0, brightness*255/2, 0);
-  else if(color == 3)
-    colorVal = ring.Color(0, 0, brightness*255/2);
-  else if(color == 4)
-    colorVal = ring.Color(brightness*255/2, brightness*255/2, 0);
+  if (color == 1)
+    colorVal = ring.Color(brightness * 255 / 2, 0, 0);
+  else if (color == 2)
+    colorVal = ring.Color(0, brightness * 255 / 2, 0);
+  else if (color == 3)
+    colorVal = ring.Color(0, 0, brightness * 255 / 2);
+  else if (color == 4)
+    colorVal = ring.Color(brightness * 255 / 2, brightness * 255 / 2, 0);
   else
-    colorVal = ring.Color(0,0,0);
-  
-  if(pattern == 1){
+    colorVal = ring.Color(0, 0, 0);
+
+  if (pattern == 1) {
     solid(colorVal);
   }
 }
 
-void solid(uint32_t color){
-  for(int i = 0; i < ring.numPixels(); i++)
+void solid(uint32_t color) {
+  for (uint8_t i = 0; i < ring.numPixels(); i++)
     ring.setPixelColor(i, color);
   ring.show();
 }
 
-void LEDblink(){
-  if(on == false){
-    for(int i = 0; i < ring.numPixels(); i++)
+void LEDblink() {
+  if (on == false) {
+    for (uint8_t i = 0; i < ring.numPixels(); i++)
       ring.setPixelColor(i, colorVal);
     ring.show();
     on = true;
   }
-  else if(on == true){
-    for(int i = 0; i < ring.numPixels(); i++)
+  else if (on == true) {
+    for (uint8_t i = 0; i < ring.numPixels(); i++)
       ring.setPixelColor(i, 0, 0, 0);
     ring.show();
     on = false;
   }
 }
 
-void LEDpulse(){
-  if(pulseSpeed == 2)
+void LEDpulse() {
+  if (pulseSpeed == 2)
     skip = false;
-  if(skip == true){
+  if (skip == true) {
     skip = false;
     return;
   }
-  else{
+  else {
     skip = true;
-    if(increase == true){
-      if(n < brightness*255/2)
+    if (increase == true) {
+      if (n < brightness * 255 / 2)
         n++;
       else
         increase = false;
     }
-    if(increase == false){
-      if(n > 0)
+    if (increase == false) {
+      if (n > 0)
         n--;
       else
         increase = true;
@@ -359,8 +358,15 @@ void LEDpulse(){
     uint32_t green = colorVal & 65280; //000000001111111100000000
     green = green >> 8;
     uint32_t blue = colorVal & 255; //000000000000000011111111
-    uint32_t pulseColor = ring.Color(n*red/255, n*green/255, n*blue/255);
+    uint32_t pulseColor = ring.Color(n * red / 255, n * green / 255, n * blue / 255);
     solid(pulseColor);
-  } 
+  }
+}
+
+int freeRam ()
+{
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 
