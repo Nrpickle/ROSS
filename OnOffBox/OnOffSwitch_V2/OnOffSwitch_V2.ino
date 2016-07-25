@@ -66,8 +66,8 @@ uint8_t started_or_stopped = stopped;
 
 uint8_t ring_byte;
 
-uint8_t engine_start_byte = 'S';
-uint8_t engine_stop_byte = 'K';
+uint8_t engine_start_byte = 10;
+uint8_t engine_stop_byte = 20;
 
 ////////// SYSTEM AND STATE DEFINITIONS HANDLING //////////
 //Main loop state
@@ -93,7 +93,7 @@ void setup() {
     //ERROR
   }
 
-  start_led.fade(0, 500);
+  start_led.fade(255, 500);
   stop_led.fade(255, 500);
 
   pinMode(startPin, INPUT);
@@ -171,12 +171,10 @@ void loop() {
 
   FastLED.show();
 
-  if (digitalRead(startPin) && (started_or_stopped == stopped) && !stop_pressed) {
-    started_or_stopped = started;
+  if (digitalRead(startPin) && !stop_pressed) {
     start_pressed = true;
   }
-  if (digitalRead(stopPin) && (started_or_stopped == started) && !start_pressed) {
-    started_or_stopped = stopped;
+  if (digitalRead(stopPin) && !start_pressed) {
     stop_pressed = true;
   }
   
@@ -189,10 +187,8 @@ void loop() {
     }
 
     if (start_pulse_count == start_num_pulses) {
-      Serial.println(engine_start_byte);
-      set_solid(HUE_GREEN);
+      Serial.write(engine_start_byte);
       start_pulse_count = 0;
-      stop_led.fade(0, stop_pulse_rate/2);
       start_pressed = false;
     }
 
@@ -207,10 +203,8 @@ void loop() {
     }
 
     if (stop_pulse_count == stop_num_pulses) {
-      Serial.println(engine_stop_byte);
-      set_solid(HUE_RED);
+      Serial.write(engine_stop_byte);
       stop_pulse_count = 0;
-      start_led.fade(0, start_pulse_rate/2);
       stop_pressed = false;
     }
 
