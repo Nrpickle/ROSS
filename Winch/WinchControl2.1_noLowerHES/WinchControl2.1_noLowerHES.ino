@@ -37,7 +37,8 @@ enum{  //Assign integer values to each state
 
 //Speed constants
 #define SLOW_DIST 5 //Distance in revolutions from full upright to begin changing winch speed in
-#define LIFT_SPEED 80 //Speed for lifting the A-frame when maintaining or returning after a profile
+#define LIFT_SPEED 80 //Speed for lifting the A-frame when finishing a profile
+#define MAINTAIN_SPEED 100 //Speed for lifting the A-frame when maintaining
 #define FAST_IN_SPEED 100 //Speed for returning fast AND maintaining
 #define SLOW_IN_SPEED 80 //Speed for returning slow AND maintaining
 
@@ -168,7 +169,7 @@ void loop() {
      
    case MAINTAIN:
      if(!digitalRead(up) == false)
-       changeSpeed(LIFT_SPEED, UP);
+       changeSpeed(MAINTAIN_SPEED, UP);
      else{
        changeSpeed(0, STOP);
        winchEncoder.write(0);
@@ -362,9 +363,10 @@ void takeProfile(){
         changeSpeed(0, STOP);
         winchEncoder.write(0); //Account for line stretching - reset after each cast
         returned = true;
+        header = 0; //Will go straight into maintain mode rather than use take profile to maintain position
       }
       else{
-        changeSpeed(LIFT_SPEED, UP);
+        changeSpeed(LIFT_SPEED, UP); //This is the speed the winch will go when within five revolutions
       //Serial.println("Going Lift_Speed in the UP direction"); //debug speed in
       }
     }
