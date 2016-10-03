@@ -30,17 +30,17 @@ enum{  //Assign integer values to each state
 };
 
 #define ENCODER_OPTIMIZE_INTERRUPTS  
-#define MAX_FORWARD 1910 //Maximum, minimum, and neutral pulse widths in microseconds
-#define NEUTRAL 1479
-#define MAX_REVERSE 1048
+#define MAX_FORWARD 1980 //Maximum, minimum, and neutral pulse widths in microseconds
+#define NEUTRAL 1534
+#define MAX_REVERSE 1086
 #define REV(x) 3936*x //Converts revolutions into encoder pings
 
 //Speed constants
 #define SLOW_DIST 5 //Distance in revolutions from full upright to begin changing winch speed in
-#define LIFT_SPEED 80 //Speed for lifting the A-frame when finishing a profile
-#define MAINTAIN_SPEED 100 //Speed for lifting the A-frame when maintaining
-#define FAST_IN_SPEED 100 //Speed for returning fast AND maintaining
-#define SLOW_IN_SPEED 80 //Speed for returning slow AND maintaining
+#define LIFT_SPEED 0 //Speed for lifting the A-frame when finishing a profile
+#define MAINTAIN_SPEED 30 //Speed for lifting the A-frame when maintaining
+#define FAST_IN_SPEED 0 //Speed for returning fast AND maintaining
+#define SLOW_IN_SPEED 0 //Speed for returning slow AND maintaining
 
 //Define remote start/stop pins
 #define remoteStartPin 5
@@ -105,7 +105,13 @@ void setup() {
   
   statusTimer.every(1000, sendStatus); //Send a status message every second
   
-  ESC.attach(9, MAX_REVERSE, MAX_FORWARD); //Connect ESC with maximum and minimum puse width values
+ ESC.attach(9, MAX_REVERSE, MAX_FORWARD); //Connect ESC with maximum and minimum puse width values
+//  ESC.writeMicroseconds(MAX_FORWARD);
+//  delay(4000);
+//  ESC.writeMicroseconds(MAX_REVERSE);
+//  delay(4000);
+//   ESC.writeMicroseconds(NEUTRAL);
+//  delay(6000);
   ESC.writeMicroseconds(NEUTRAL); //Start the winch in neutral
   delay(5000); //Allow ESC to receive neutral signal for proper amount of time
 }

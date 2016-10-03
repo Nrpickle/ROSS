@@ -41,6 +41,7 @@ enum{  //Assign integer values to each state
 #define MAINTAIN_SPEED 100 //Speed for lifting the A-frame when maintaining
 #define FAST_IN_SPEED 100 //Speed for returning fast AND maintaining
 #define SLOW_IN_SPEED 80 //Speed for returning slow AND maintaining
+#define PROFILE_DELAY 5000 //How long to delay before taking a profile to ensure the winch has recovered from a drop  
 
 //Define remote start/stop pins
 #define remoteStartPin 5
@@ -284,7 +285,11 @@ void updateParameters(){
     speedOut = 0;
     speedIn = 0;
     dataCorrupted = true;
-  } 
+  }
+//   if(header == 255){
+//    changeSpeed(0, STOP);
+//    delay(PROFILE_DELAY);
+//  } 
 }
 
 void sendStatus(){
