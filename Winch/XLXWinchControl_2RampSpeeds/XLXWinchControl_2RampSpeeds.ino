@@ -38,7 +38,7 @@ enum{  //Assign integer values to each state
 #define REV(x) 3936*x //Converts revolutions into encoder pings
 
 //Speed constants
-#define SLOW_DIST 5 //Distance in revolutions from full upright to begin changing winch speed in
+#define SLOW_DIST 15 //Distance in revolutions from full upright to begin changing winch speed in
 #define LIFT_SPEED 25 //Speed for lifting the A-frame when finishing a profile
 #define MAINTAIN_SPEED 40 //Speed for lifting the A-frame when maintaining
 #define FAST_IN_SPEED 50 //Speed for returning fast AND maintaining
@@ -57,6 +57,7 @@ enum{  //Assign integer values to each state
 #define upLED 15
 
 const double RAMP_TIME = 500; //Time it takes to change speed in milliseconds
+const double RAMP_TIME_DOWN = 3000; //Ramp time at beginning of profile to prevent tangling
 const float pi = 3.14159;
 uint64_t t0 = 0; //Beginning time for speed change
 int16_t speedDifference = 0; //Difference between desired and current speed
@@ -185,6 +186,10 @@ void loop() {
 }
 
 void changeSpeed(uint8_t newSpeed, uint8_t newDir){
+  double ramp = RAMP_TIME;
+  if(newDir == DOWN)
+    ramp = RAMP_TIME_DOWN;
+
   Serial.println(newSpeed);
   //If we want to go UP
   if(newDir == UP){
@@ -235,7 +240,7 @@ void changeSpeed(uint8_t newSpeed, uint8_t newDir){
   }
    
   uint64_t deltaT = millis() - t0;
-  winch.currentSpeed = (double)winch.prevSpeed + (double)speedDifference*.5*(1-cos((pi*(double)deltaT)/RAMP_TIME)); //Accelerate sinusoidally
+  winch.currentSpeed = (double)winch.prevSpeed + (double)speedDifference*.5*(1-cos((pi*(double)deltaT)/ramp)); //Accelerate sinusoidally
   constrain(winch.currentSpeed, 0, 200); //Do not write above or below the maximum pulse widths
   uint16_t speedToWrite = map(winch.currentSpeed, 0, 200, MAX_REVERSE, MAX_FORWARD); //Convert from sinusoid magnitude to pulse width
   ESC.writeMicroseconds(speedToWrite); //Write the scaled value
@@ -344,7 +349,7 @@ void takeProfile(){
 //      changeSpeed(30, DOWN);
 //      returned = false;
 //    }
-    if((winchEncoder.read() < depth)){
+     if((winchEncoder.read() < depth)){
       changeSpeed(speedOut, DOWN);
       returned = false;
     }
@@ -355,7 +360,7 @@ void takeProfile(){
     }
   }
   else if(depthReached == true && halt == false){
-    if(winchEncoder.read() > REV(SLOW_DIST)){ //change back to else if
+    if(winchEncoder.read() > REV(SLOW_DIST)){
       changeSpeed(speedIn, UP);
       //Serial.println("Going speedIn in the UP direction"); //Debug speed in
       returned = false;

@@ -11,7 +11,7 @@ def closeCheck():
 		closeCheck()
 		
 ser = serial.Serial(
-    port='COM15',\
+    port='COM30',\
     baudrate=57600,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
@@ -56,9 +56,9 @@ for x in parameters:
 	ser.write(x)
 	sleep(0.1)
 
-#ser.close()
-#closeCheck()
-while(1):
-	print(ser.readline())
+ser.close()
+closeCheck()
+#while(1):
+#	print(ser.readline())
 	
 	
