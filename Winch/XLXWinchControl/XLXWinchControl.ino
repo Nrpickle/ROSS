@@ -38,7 +38,7 @@ enum{  //Assign integer values to each state
 #define REV(x) 3936*x //Converts revolutions into encoder pings
 
 //Speed constants
-#define SLOW_DIST 5 //Distance in revolutions from full upright to begin changing winch speed in
+#define SLOW_DIST 15 //Distance in revolutions from full upright to begin changing winch speed in
 #define LIFT_SPEED 25 //Speed for lifting the A-frame when finishing a profile
 #define MAINTAIN_SPEED 40 //Speed for lifting the A-frame when maintaining
 #define FAST_IN_SPEED 50 //Speed for returning fast AND maintaining
